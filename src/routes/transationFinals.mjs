@@ -3,6 +3,6 @@ import * as transactionFinalsController from '../controller/transactionFinal.mjs
 
 const router = express.Router();
 
-router.post('/', transactionFinalsController.createFinalController);
+router.post('/transaction-final', transactionFinalsController.createFinalController);
 
 export default router;

@@ -54,6 +54,6 @@ const Customers = db.define('customers',{
     }
 })
 
-Customers.belongsTo(Agents, {foreignKey: 'agent'});
+Customers.belongsTo(Agents, {foreignKey: 'agentId'});
 
 export default Customers;

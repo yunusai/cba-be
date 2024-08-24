@@ -49,7 +49,7 @@ const TransactionDetails = db.define('transactionDetails', {
     }
 })
 
-TransactionDetails.belongsTo(Customers, {foreignKey: 'customer'});
-TransactionDetails.belongsTo(Products, {foreignKey: 'product'});
+TransactionDetails.belongsTo(Customers, {foreignKey: 'customerId'});
+TransactionDetails.belongsTo(Products, {foreignKey: 'productId'});
 
 export default TransactionDetails;

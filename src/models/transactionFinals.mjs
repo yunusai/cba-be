@@ -24,7 +24,7 @@ const TransactionFinals = db.define('transactionFinals', {
 })
 
 // Relationship between TransactionFinals and TransactionDetails
-TransactionFinals.hasMany(TransactionDetails, { foreignKey: 'transactionFinal' });
-TransactionDetails.belongsTo(TransactionFinals, { foreignKey: 'transactionFinal' });
+TransactionFinals.hasMany(TransactionDetails, { foreignKey: 'transactionFinalId' });
+TransactionDetails.belongsTo(TransactionFinals, { foreignKey: 'transactionFinalId' });
 
 export default TransactionFinals;

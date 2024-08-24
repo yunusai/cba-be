@@ -3,10 +3,10 @@ import * as transactionDetailsController from '../controller/transactionDetails.
 
 const router = express.Router();
 
-router.get('/', transactionDetailsController.getAllTransactionDetails)
-router.get('/:id', transactionDetailsController.getTransactionDetailById)
-router.post('/', transactionDetailsController.createTransactionDetail)
-router.put('/:id', transactionDetailsController.updateTransactionDetail)
-router.delete('/:id', transactionDetailsController.deleteTransactionDetail)
+router.get('/transaction-detail', transactionDetailsController.getAllTransactionDetails)
+router.get('/transaction-detail/:id', transactionDetailsController.getTransactionDetailById)
+router.post('/transaction-detail', transactionDetailsController.createTransactionDetail)
+router.put('/transaction-detail/:id', transactionDetailsController.updateTransactionDetail)
+router.delete('/transaction-detail/:id', transactionDetailsController.deleteTransactionDetail)
 
 export default router;

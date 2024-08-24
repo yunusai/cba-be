@@ -1,23 +1,25 @@
-//import mysql from 'mysql2'
 import { Sequelize } from 'sequelize';
+import path from 'path';
+import fs from 'fs';
 
-// const db = new Sequelize('cba-node', 'root', 'SQLserVer123', {
-//     host: 'localhost',
-//     dialect: 'mysql'
-// })
-
-
-// const db = new Sequelize('cbaf5568_backend_api', 'cbaf5568_juan', 'juan100', {
-//     host: 'localhost',
-//     dialect: 'mysql',
-//     port: 3306
-// });
-
-const db = new Sequelize('cbaf5568_wp442', 'cbaf5568_wp442', '!6SpMD348@', {
-    host: '203.175.9.136',
+const db = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
+    host: process.env.DB_HOST,
     dialect: 'mysql',
-    port: 3306
+    port: process.env.DB_PORT
 });
+
+//Function to load models
+const loadModels = (sequalize, dirname) => {
+    fs.readdirSync(dirname)
+        .filter(file => file.endsWith('.mjs'))
+        .forEach(file => {
+            const model = require(path.join(dirname, file));
+            model(sequalize);
+        })
+}
+
+loadModels(db, path.resolve(__dirname, '../models'));
+
 
 //203.175.9.136
 //malintang.iixcp.rumahweb.net
