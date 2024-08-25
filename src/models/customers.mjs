@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import db from "../config/dabatase.mjs";
+import db from "../config/database.mjs";
 import Agents from "./agents.mjs";
 
 const {DataTypes} = Sequelize;
@@ -47,7 +47,7 @@ const Customers = db.define('customers',{
     nationality: {
         type: DataTypes.STRING,
     },
-    agent: {
+    agentId: {
         type:DataTypes.INTEGER,
         references: {model: Agents, key: 'id'},
         allowNull: false

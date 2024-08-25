@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import db from "../config/dabatase.mjs";
+import db from "../config/database.mjs";
 
 const {DataTypes} = Sequelize;
 

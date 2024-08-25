@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import db from "../config/dabatase.mjs";
+import db from "../config/database.mjs";
 import Customers from "./customers.mjs";
 import Products from "./products.mjs";
 
@@ -30,21 +30,22 @@ const TransactionDetails = db.define('transactionDetails', {
     tanggalTerima: {
         type: DataTypes.DATE,
     },
-    customer: {
+    customerId: {
         type: DataTypes.INTEGER,
         references: {model: Customers, key: 'id'},
         allowNull: false
     },
-    product: {
+    productId: {
         type: DataTypes.INTEGER,
         references: {model: Products, key: 'id'},
         allowNull: false
     }
 }, {
     hooks: {
-        beforeCreate: (TransactionDetail) =>{
-            //logic untuk menggabungkan customerId dan tanggal hari itu
-            TransactionDetail.transactionCode = `${TransactionDetail.customer}-${new Date().toISOString().split('T')[0]}`
+        beforeCreate: (transactionDetail) => {
+            // Membuat transactionCode berdasarkan customerId dan tanggal saat ini
+            const today = new Date().toISOString().split('T')[0]; // Format tanggal menjadi YYYY-MM-DD
+            transactionDetail.transactionCode = `${transactionDetail.customerId}-${today}`;
         }
     }
 })

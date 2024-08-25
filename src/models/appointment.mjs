@@ -1,11 +1,11 @@
 import { Sequelize } from "sequelize";
-import db from "../config/dabatase.mjs";
+import db from "../config/database.mjs";
 
 const {DataTypes} = Sequelize;
 
 const Appointments = db.define('appointments', {
     name: {
-        type: DataTypes.STIRNG,
+        type: DataTypes.STRING,
         allowNull: false
     },
     email: {
@@ -20,7 +20,7 @@ const Appointments = db.define('appointments', {
         type: DataTypes.DATE,
         allowNull: false
     },
-    pesam: {
+    pesan: {
         type: DataTypes.TEXT,
         allowNull: true,
     },

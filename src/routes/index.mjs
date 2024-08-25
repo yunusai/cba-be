@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express from "express";
 import agentReview from './agentPerformance.mjs'
 import productRoutes from './products.mjs'
 import authRoutes from './authRoutes.mjs'
@@ -7,7 +7,7 @@ import transactionDetailRoutes from './transactionDetails.mjs'
 import transactionFinalRoutes from './transationFinals.mjs'
 
 
-const router = Router();
+const router = express.Router();
 
 router.use(agentReview);
 router.use(productRoutes);

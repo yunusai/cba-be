@@ -16,6 +16,7 @@ export const createTransactionFinal = async (transactionCode, totalPay) =>{
         }
 
         const transactionFinals = await TransactionFinals.create({
+            transactionCode,
             totalPay,
             totalAmount
         });

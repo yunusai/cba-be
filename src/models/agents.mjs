@@ -1,17 +1,21 @@
 import { Sequelize } from "sequelize"
-import db from "../config/dabatase.mjs"
+import db from "../config/database.mjs"
 
 const { DataTypes } = Sequelize;
 
 const Agents = db.define('agents', {
     name: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: false
     },
     email: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
     },
     password: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: false
     },
     refreshToken: {
         type: DataTypes.TEXT

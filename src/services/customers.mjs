@@ -19,7 +19,7 @@ export const findCustomerByName = async (name) => {
 }
 
 export const saveCustomer = async (input) => {
-    const agent = await Agents.findByPk(input.agent);
+    const agent = await Agents.findByPk(input.agentId);
     if(!agent) throw new Error ('Agent not found')
 
     const newCustomer = await Customers.create({
@@ -33,12 +33,12 @@ export const updateCustomer = async (id, customerInput) => {
     const customers = await Customers.findByPk(id);
     if (!customers) throw new Error('Customer not found');
 
-    const agents = await Agents.findByPk(customerInput.agent);
+    const agents = await Agents.findByPk(customerInput.agentId);
     if (!agents) throw new Error('Agent not found');
 
     await customers.update({
         ...customerInput,
-        agent: agents.id,
+        agentId: agents.id,
     })
     return customers.toJSON();
 }
