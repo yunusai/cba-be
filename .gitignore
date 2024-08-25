@@ -4,4 +4,4 @@
 #IDE directories
 .vscode/
 
-.env
+/.env

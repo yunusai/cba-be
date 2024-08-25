@@ -18,7 +18,7 @@ const Agents = db.define('agents', {
         allowNull: false
     },
     refreshToken: {
-        type: DataTypes.TEXT
+        type: DataTypes.STRING
     },
     role: {
         type: DataTypes.ENUM('user', 'admin'),

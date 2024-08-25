@@ -15,7 +15,7 @@ export const handleLogin = async (req, res) => {
     try {
         const { accessToken, refreshToken } = await authService.login(email, password);
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'Strict' });
-        res.json({ accessToken });
+        res.json({ accessToken, refreshToken });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -35,7 +35,7 @@ export const handleLogout = async (req, res) => {
     try {
         await authService.logout(req.agent.id);
         res.clearCookie('refreshToken');
-        res.sendStatus(204);
+        res.status(204).json({message: 'logout berhasil'});
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

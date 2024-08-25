@@ -33,12 +33,12 @@ export const deleteProduct = async (id) => {
 
 export const findAllProducts = async () =>{
     const products = await Products.findAll();
-    return products.map(product => products.toJSON());
+    return products.map(product => product.toJSON());
 }
 
 export const getDetailProducts = async (id) => {
     const products = await Products.findByPk(id);
     if(!products) throw new Error('Product not found');
 
-    return products.map(product => product.toJSON())
+    return products.toJSON();
 }

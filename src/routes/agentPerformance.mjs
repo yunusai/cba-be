@@ -4,20 +4,31 @@ import { getAgentPerformance } from '../controller/agentPerformanceController.mj
 const router = express.Router();
 
 /**
- * @swagger
+ * @openapi
  * /review:
  *   get:
- *     summary: Get agent performance reviews
- *     description: Retrieve a list of agent performance reviews.
+ *     summary: Retrieve agent performance data
  *     responses:
- *       200:
- *         description: A list of agent performance reviews.
+ *       '200':
+ *         description: Successfully retrieved agent performance data
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
+ *               type: object
+ *               properties:
+ *                 performance:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       role:
+ *                         type: string
  */
 router.get('/review', getAgentPerformance);
 

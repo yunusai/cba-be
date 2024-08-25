@@ -26,7 +26,7 @@ export const login = async (email, password) => {
     agent.refreshToken = refreshToken;
     await agent.save();
 
-    return {accessToken: accessToken, refreshToken: refreshToken}
+    return {accessToken: accessToken, refreshToken: refreshToken} //refresh token tidak keluar tapi ada di database
 }
 
 export const refreshToken = async (refreshToken) => {
@@ -35,14 +35,16 @@ export const refreshToken = async (refreshToken) => {
     const agent = await Agents.findOne({where: {refreshToken: refreshToken}});
     if (!agent) throw new Error('Invalid Refresh Token');
 
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-        if(err) throw new Error('Invalid Refresh Token');
-
-        const accessToken = jwt.sign({ id: agent.id, role: agent.role }, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
-        return {accessToken: accessToken}
-    })
+    try {
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const accessToken = jwt.sign({ id: agent.id, role: agent.role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+        return { accessToken };
+    } catch (err) {
+        throw new Error('Invalid Refresh Token');
+    }
 }
 
 export const logout = async (agentId) => {
     await Agents.update({refreshToken: null}, {where: {id: agentId}});
+    return {message: 'logout success'}
 }

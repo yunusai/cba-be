@@ -20,27 +20,44 @@ export const findCustomerByName = async (name) => {
 
 export const saveCustomer = async (input) => {
     const agent = await Agents.findByPk(input.agentId);
-    if(!agent) throw new Error ('Agent not found')
+    if (!agent) {
+        throw new Error(`Agent not found with ID ${input.agentId}`);
+    }
 
-    const newCustomer = await Customers.create({
-        ...input,
-        agent: agent.id
-    })
+    const newCustomer = await Customers.create(input);
     return newCustomer.toJSON();
 }
 
 export const updateCustomer = async (id, customerInput) => {
-    const customers = await Customers.findByPk(id);
-    if (!customers) throw new Error('Customer not found');
+    // Mulai transaction
+    const transaction = await db.transaction();
 
-    const agents = await Agents.findByPk(customerInput.agentId);
-    if (!agents) throw new Error('Agent not found');
+    try {
+        const customer = await Customers.findByPk(id, { transaction });
+        if (!customer) {
+            throw new Error(`Customer not found with ID ${id}`);
+        }
 
-    await customers.update({
-        ...customerInput,
-        agentId: agents.id,
-    })
-    return customers.toJSON();
+        const agent = await Agents.findByPk(customerInput.agentId, { transaction });
+        if (!agent) {
+            throw new Error(`Agent not found with ID ${customerInput.agentId}`);
+        }
+
+        await customer.update(
+            {
+                ...customerInput,
+                agentId: agent.id,
+            },
+            { transaction }
+        );
+
+        await transaction.commit(); // Selesaikan transaction jika berhasil
+
+        return customer.toJSON();
+    } catch (error) {
+        await transaction.rollback(); // Batalkan transaction jika terjadi error
+        throw error; // Lempar kembali error
+    }
 }
 
 export const deleteCustomer = async (id) => {
