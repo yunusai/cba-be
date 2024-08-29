@@ -16,6 +16,7 @@ export const calculateAgentPerformance = async (agentName, startDate, endDate) =
             where: {
                 name: {
                     [Op.like]: `%${lowerCaseAgentName}%` // case-insensitive search
+
                 }
             },
             include: [
@@ -34,7 +35,7 @@ export const calculateAgentPerformance = async (agentName, startDate, endDate) =
                 }
             ]
         });
-
+        console.log(agent.agentName);
         if (!agent) {
             throw new Error('Agent not found');
         }

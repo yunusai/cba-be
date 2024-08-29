@@ -8,7 +8,6 @@ const TransactionFinals = db.define('transactionFinals', {
     transactionCode: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
     },
     totalPay: {
         type: DataTypes.DOUBLE,
