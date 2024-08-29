@@ -9,7 +9,7 @@ export const createTransactionFinal = async (transactionCode, totalPay) =>{
             throw new Error('No transaction details found with given transaction code');
         }
 
-        const totalAmount = transactionDetails.reduce((sum, detail) => sum + detail.subtotal*detail.quantity, 0);
+        const totalAmount = transactionDetails.reduce((sum, detail) => sum + (detail.subtotal*detail.quantity), 0);
         console.log(`totalAmount = ${totalAmount}`);
         console.log(`totalPay = ${totalPay}`);
 
