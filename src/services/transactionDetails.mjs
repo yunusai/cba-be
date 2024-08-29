@@ -15,22 +15,36 @@ export const getTransactionDetailById = async (id) => {
 
 export const createTransactionDetail = async (data) => {
     const { customerId, productId, quantity, subtotal, tanggalSewa, akhirSewa, tanggalKirim, tanggalTerima } = data;
-    const customers = await Customers.findByPk(customerId);
-    const products = await Products.findByPk(productId);
 
-    if(!customers || !products){
-        throw new Error('Customer or Product not found');
+    const customer = await Customers.findByPk(customerId);
+    const product = await Products.findByPk(productId);
+
+    if (!customer) {
+        throw new Error('Customer not found');
     }
 
-    const transactionDetails = await TransactionDetails.create({
-        customerId, productId, quantity, subtotal, tanggalSewa,
-        akhirSewa, tanggalKirim, tanggalTerima
-    });
-    //Reload instance untuk memastikan semua data termasuk transactionCode terambil
-    transactionDetails = await transactionDetails.reload();
+    if (!product) {
+        throw new Error('Product not found');
+    }
 
-    return transactionDetails;
-}
+    // Buat transactionCode di sisi service, jika tidak ingin mengandalkan hooks
+    const today = new Date().toISOString().split('T')[0];
+    const transactionCode = `${customerId}-${today}`;
+
+    const transactionDetail = await TransactionDetails.create({
+        transactionCode,  // Masukkan transactionCode secara eksplisit
+        customerId,
+        productId,
+        quantity,
+        subtotal,
+        tanggalSewa,
+        akhirSewa,
+        tanggalKirim,
+        tanggalTerima
+    });
+
+    return transactionDetail;
+};
 
 export const updateTransactionDetail = async (id, data) => {
     const { customerId, productId, quantity, subtotal, tanggalSewa, akhirSewa, tanggalKirim, tanggalTerima } = data;

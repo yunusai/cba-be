@@ -19,16 +19,16 @@ const TransactionDetails = db.define('transactionDetails', {
         allowNull: false
     },
     tanggalSewa: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
     },
     akhirSewa: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
     },
     tanggalKirim: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
     },
     tanggalTerima: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
     },
     customerId: {
         type: DataTypes.INTEGER,
@@ -43,9 +43,11 @@ const TransactionDetails = db.define('transactionDetails', {
 }, {
     hooks: {
         beforeCreate: (transactionDetail) => {
-            // Membuat transactionCode berdasarkan customerId dan tanggal saat ini
-            const today = new Date().toISOString().split('T')[0]; // Format tanggal menjadi YYYY-MM-DD
-            transactionDetail.transactionCode = `${transactionDetail.customerId}-${today}`;
+            // Pastikan transactionCode tidak null atau undefined
+            if(!transactionDetail.transactionCode) {
+                const today = new Date().toISOString().split('T')[0]; // Format tanggal menjadi YYYY-MM-DD
+                transactionDetail.transactionCode = `${transactionDetail.customerId}-${today}`;
+            }
         }
     }
 })

@@ -1,15 +1,16 @@
 import Customers from "../models/customers.mjs";
 import Agents from "../models/agents.mjs";
+import db from "../config/database.mjs";
 
 export const findAllCustomers = async () => {
     const customers = await Customers.findAll({include: Agents})
-    return customers.map(customer => customers.toJSON());
+    return customers.map(customers => customers.toJSON());
 }
 
 export const findCustomerById = async (id) => {
     const customers = await Customers.findByPk(id, {include: Agents});
     if(!customers) throw new Error('Data not found')
-    return customers.map(customer => customers.toJSON());
+    return customers.toJSON();
 }
 
 export const findCustomerByName = async (name) => {
