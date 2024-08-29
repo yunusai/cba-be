@@ -28,4 +28,5 @@ const Agents = db.define('agents', {
     freezeTableName:true
 });
 
+
 export default Agents

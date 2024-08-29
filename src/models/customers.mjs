@@ -49,11 +49,9 @@ const Customers = db.define('customers',{
     },
     agentId: {
         type:DataTypes.INTEGER,
-        references: {model: Agents, key: 'id'},
         allowNull: false
     }
 })
 
-Customers.belongsTo(Agents, {foreignKey: 'agentId'});
 
 export default Customers;

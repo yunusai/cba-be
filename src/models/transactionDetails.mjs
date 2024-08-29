@@ -1,7 +1,5 @@
 import { Sequelize } from "sequelize";
 import db from "../config/database.mjs";
-import Customers from "./customers.mjs";
-import Products from "./products.mjs";
 
 const { DataTypes } = Sequelize;
 
@@ -32,12 +30,10 @@ const TransactionDetails = db.define('transactionDetails', {
     },
     customerId: {
         type: DataTypes.INTEGER,
-        references: {model: Customers, key: 'id'},
         allowNull: false
     },
     productId: {
         type: DataTypes.INTEGER,
-        references: {model: Products, key: 'id'},
         allowNull: false
     }
 }, {
@@ -51,8 +47,5 @@ const TransactionDetails = db.define('transactionDetails', {
         }
     }
 })
-
-TransactionDetails.belongsTo(Customers, {foreignKey: 'customerId'});
-TransactionDetails.belongsTo(Products, {foreignKey: 'productId'});
 
 export default TransactionDetails;

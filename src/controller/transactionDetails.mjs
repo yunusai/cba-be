@@ -35,7 +35,7 @@ export const createTransactionDetail = async (req, res) => {
 export const updateTransactionDetail = async (req, res) => {
     try {
         const { id } = req.params;
-        const transactionDetails = await updateTransactionDetail(id, req.body);
+        const transactionDetails = await transactionDetailController.updateTransactionDetail(id, req.body);
         res.json(transactionDetails);
     } catch (error) {
         res.status(400).json({message: 'Server Error', error: error.message});
@@ -45,7 +45,7 @@ export const updateTransactionDetail = async (req, res) => {
 export const deleteTransactionDetail = async (req, res) => {
     try {
         const { id } = req.params;
-        const result = await deleteTransactionDetail(id);
+        const result = await transactionDetailController.deleteTransactionDetail(id);
         res.json(result);
     } catch (error) {
         res.status(404).json({message: 'Server Error', error: error.message})
