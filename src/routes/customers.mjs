@@ -1,5 +1,6 @@
 import express from 'express'
 import * as customerController from '../controller/customers.mjs'
+import { authenticateToken, authorizeRole } from '../middleware/authMiddleware.mjs';
 
 const router = express.Router();
 
@@ -149,11 +150,11 @@ const router = express.Router();
  *       '204':
  *         description: Customer deleted successfully
  */
-router.get('/customers', customerController.getAllCustomers);
-router.get('/customers/:id', customerController.getCustomerById);
-router.get('/customers/name/:name', customerController.getCustomerByName);
-router.post('/customers', customerController.createCustomer);
-router.put('/customers/:id', customerController.updateCustomer);
-router.delete('/customers/:id', customerController.deleteCustomer);
+router.get('/customers', authenticateToken, customerController.getAllCustomers);
+router.get('/customers/:id', authenticateToken, customerController.getCustomerById);
+router.get('/customers/name/:name', authenticateToken, customerController.getCustomerByName);
+router.post('/customers', authenticateToken, customerController.createCustomer);
+router.put('/customers/:id', authenticateToken, customerController.updateCustomer);
+router.delete('/customers/:id', authenticateToken, customerController.deleteCustomer);
 
 export default router;

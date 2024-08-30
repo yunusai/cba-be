@@ -1,5 +1,6 @@
 import express from 'express'
 import { getAgentPerformance } from '../controller/agentPerformanceController.mjs'
+import { authenticateToken, authorizeRole } from '../middleware/authMiddleware.mjs';
 
 const router = express.Router();
 
@@ -30,6 +31,6 @@ const router = express.Router();
  *                       role:
  *                         type: string
  */
-router.get('/review', getAgentPerformance);
+router.get('/review', authenticateToken, authorizeRole(['admin']), getAgentPerformance);
 
 export default router;

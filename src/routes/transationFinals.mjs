@@ -1,5 +1,6 @@
 import express from 'express'
 import * as transactionFinalsController from '../controller/transactionFinal.mjs'
+import { authenticateToken } from '../middleware/authMiddleware.mjs';
 
 const router = express.Router();
 
@@ -25,6 +26,6 @@ const router = express.Router();
  *       '201':
  *         description: Transaction final created successfully
  */
-router.post('/transaction-final', transactionFinalsController.createFinalController);
+router.post('/transaction-final', authenticateToken, transactionFinalsController.createFinalController);
 
 export default router;

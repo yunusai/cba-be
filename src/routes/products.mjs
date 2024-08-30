@@ -1,5 +1,6 @@
 import express from 'express'
 import * as productController from '../controller/products.mjs'
+import { authenticateToken, authorizeRole } from '../middleware/authMiddleware.mjs';
 
 const router = express.Router();
 
@@ -92,10 +93,10 @@ const router = express.Router();
  *       '204':
  *         description: Product deleted successfully
  */
-router.get('/product', productController.getAllProducts);
-router.get('/product/:id', productController.getProductDetails);
-router.post('/product', productController.createProduct);
-router.put('/product/:id', productController.updateProducts);
-router.delete('/product/:id', productController.deleteProducts);
+router.get('/product', authenticateToken, productController.getAllProducts);
+router.get('/product/:id', authenticateToken, productController.getProductDetails);
+router.post('/product', authenticateToken, productController.createProduct);
+router.put('/product/:id', authenticateToken, productController.updateProducts);
+router.delete('/product/:id', authenticateToken, productController.deleteProducts);
 
 export default router;

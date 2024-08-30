@@ -1,5 +1,6 @@
 import express from 'express'
 import * as transactionDetailsController from '../controller/transactionDetails.mjs'
+import { authenticateToken, authorizeRole } from '../middleware/authMiddleware.mjs';
 
 const router = express.Router();
 
@@ -140,10 +141,10 @@ const router = express.Router();
  *       '204':
  *         description: Transaction detail deleted successfully
  */
-router.get('/transaction-detail', transactionDetailsController.getAllTransactionDetails)
-router.get('/transaction-detail/:id', transactionDetailsController.getTransactionDetailById)
-router.post('/transaction-detail', transactionDetailsController.createTransactionDetail)
-router.put('/transaction-detail/:id', transactionDetailsController.updateTransactionDetail)
-router.delete('/transaction-detail/:id', transactionDetailsController.deleteTransactionDetail)
+router.get('/transaction-detail', authenticateToken, transactionDetailsController.getAllTransactionDetails)
+router.get('/transaction-detail/:id', authenticateToken, transactionDetailsController.getTransactionDetailById)
+router.post('/transaction-detail', authenticateToken, transactionDetailsController.createTransactionDetail)
+router.put('/transaction-detail/:id', authenticateToken, transactionDetailsController.updateTransactionDetail)
+router.delete('/transaction-detail/:id', authenticateToken, transactionDetailsController.deleteTransactionDetail)
 
 export default router;
