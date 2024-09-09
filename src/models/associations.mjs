@@ -2,6 +2,7 @@ import Agents from './agents.mjs';
 import Customers from './customers.mjs';
 import Products from './products.mjs';
 import TransactionDetails from './transactionDetails.mjs';
+import Countries from './countries.mjs';
 
 // Definisikan relasi setelah semua model diimpor
 
@@ -17,4 +18,11 @@ TransactionDetails.belongsTo(Customers, { foreignKey: 'customerId' });
 Products.hasMany(TransactionDetails, { foreignKey: 'productId' });
 TransactionDetails.belongsTo(Products, { foreignKey: 'productId' });
 
-export { Agents, Customers, Products, TransactionDetails };
+//Relasi antara Countries dan Customers
+Countries.hasMany(Customers, {foreignKey: 'countryId' });
+Customers.belongsTo(Countries, {foreignKey: 'countryId'});
+
+Countries.hasMany(Customers, { foreignKey: 'emergencyContactCountryId'});
+Customers.belongsTo(Countries, { foreignKey: 'emergencyContactCountryId'});
+
+export { Agents, Customers, Products, TransactionDetails, Countries };

@@ -6,6 +6,7 @@ import appointmentRoutes from './appointment.mjs'
 import transactionDetailRoutes from './transactionDetails.mjs'
 import transactionFinalRoutes from './transationFinals.mjs'
 import customersRoutes from './customers.mjs'
+import countiresRoutes from './countries.mjs'
 
 
 const router = express.Router();
@@ -17,5 +18,6 @@ router.use(appointmentRoutes);
 router.use(transactionDetailRoutes);
 router.use(transactionFinalRoutes);
 router.use(customersRoutes);
+router.use(countiresRoutes)
 
 export default router;

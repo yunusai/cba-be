@@ -1,51 +1,88 @@
 import { Sequelize } from "sequelize";
 import db from "../config/database.mjs";
-import Agents from "./agents.mjs";
+
 
 const {DataTypes} = Sequelize;
 
 const Customers = db.define('customers',{
-    name: {
+    fullName: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    motherName: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    nationality: {
+        type: DataTypes.STRING,
     },
     email: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    phone: {
+    phoneNumber: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    address: {
+    originalAddress: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    city: {
+    originalCity: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    identity_type:{
+    originalProvince: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    identity_number: {
+    zipCode: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    place_of_birth: {
+    countryId: { //harus buat parameter country
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    indonesiaAccomodationName: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    date_of_birth: {
-        type: DataTypes.DATEONLY,
+    indonesiaAddress: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    emergencyContactFullName: {
+        type: DataTypes.STRING,
         allowNull: false
     },
-    age: {
-        type: DataTypes.INTEGER
+    emergencyContactRelation: {
+        type: DataTypes.ENUM('Parent','Grandparent','Brother/Sister','Other'),
+        allowNull: false
     },
-    nationality: {
+    emergencyContactAddress: {
         type: DataTypes.STRING,
+        allowNull: false
+    },
+    emergencyContactCountryId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    emergencyContactEmail: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    emergencyContactMobilePhone: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    travelDocument: {
+        type: DataTypes.ENUM('Passport'),
+        allowNull: false
+    },
+    documentNumber:{
+        type: DataTypes.STRING,
+        allowNull: false
     },
     agentId: {
         type:DataTypes.INTEGER,

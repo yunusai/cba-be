@@ -16,6 +16,10 @@ const TransactionDetails = db.define('transactionDetails', {
         type: DataTypes.DOUBLE,
         allowNull: false
     },
+    status: {
+        type: DataTypes.ENUM('Pending', 'Done'),
+        defaultValue: 'Pending'
+    },
     tanggalSewa: {
         type: DataTypes.DATEONLY,
     },
@@ -41,8 +45,8 @@ const TransactionDetails = db.define('transactionDetails', {
         beforeCreate: (transactionDetail) => {
             // Pastikan transactionCode tidak null atau undefined
             if(!transactionDetail.transactionCode) {
-                const today = new Date().toISOString().split('T')[0]; // Format tanggal menjadi YYYY-MM-DD
-                transactionDetail.transactionCode = `${transactionDetail.customerId}-${today}`;
+                const today = new Date().toISOString().replace(/-/g, ''); // Format tanggal menjadi YYYY-MM-DD
+                transactionDetail.transactionCode = `${customerId}${today}`;
             }
         }
     }

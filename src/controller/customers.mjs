@@ -39,7 +39,7 @@ export const createCustomer = async (req, res) => {
 export const updateCustomer = async (req, res) => {
     try {
         const customer = await customerService.updateCustomer(req.params.id, req.body);
-        res.json(customer);
+        res.staus(200).json(customer);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

@@ -44,3 +44,12 @@ export const getProductDetails = async (req, res) => {
         res.status(400).json({message: error.message})
     }
 }
+
+export const lookupProducts = async (req, res) => {
+    try {
+        const products = await productService.lookupProducts();
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

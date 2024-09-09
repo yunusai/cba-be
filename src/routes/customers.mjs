@@ -153,7 +153,7 @@ const router = express.Router();
 router.get('/customers', authenticateToken, customerController.getAllCustomers);
 router.get('/customers/:id', authenticateToken, customerController.getCustomerById);
 router.get('/customers/name/:name', authenticateToken, customerController.getCustomerByName);
-router.post('/customers', authenticateToken, customerController.createCustomer);
+router.post('/customers', customerController.createCustomer); //untuk create customers baru bisa dilakukan oleh customers itu sendiri
 router.put('/customers/:id', authenticateToken, customerController.updateCustomer);
 router.delete('/customers/:id', authenticateToken, customerController.deleteCustomer);
 

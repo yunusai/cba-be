@@ -2,6 +2,7 @@ import TransactionDetails from "../models/transactionDetails.mjs";
 import Customers from "../models/customers.mjs";
 import Products from "../models/products.mjs";
 import * as transactionDetailController from "../services/transactionDetails.mjs";
+import { UpdateTransactionStatusDTO } from "../dto/updateTransactionStatusDTO.mjs";
 
 export const getAllTransactionDetails = async (req, res) => {
     try {
@@ -49,5 +50,42 @@ export const deleteTransactionDetail = async (req, res) => {
         res.json(result);
     } catch (error) {
         res.status(404).json({message: 'Server Error', error: error.message})
+    }
+}
+
+export const uploadAndUpdateTransaction = async (req, res) => {
+    try {
+        const { transactionCode } = req.params;
+        const { status } = req.body;
+        UpdateTransactionStatusDTO.validate({transactionCode, status});
+
+        // Menggunakan middleware multer untuk mengunggah file
+        transactionDetailController.upload.single('file')(req, res, async (err) => {
+            if (err) {
+                return res.status(500).json({ error: 'File upload failed' });
+            }
+
+            const file = req.file;
+
+            // Perbarui status transaksi dan unggah file
+            try {
+                const transactionDetail = await transactionDetailController.updateTransactionStatus(transactionCode, status, file);
+                res.json(transactionDetail);
+            } catch (error) {
+                res.status(500).json({ error: error.message });
+            }
+        
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const checkTransactionStatus = async (req, res) => {
+    try {
+        const status = await transactionDetailController.checkTransactionStatus(req.params.transactionCode);
+        res.json({ status });
+    } catch (error) {
+        res.status(404).json({ message: error.message });
     }
 }

@@ -1,20 +1,40 @@
 import Customers from "../models/customers.mjs";
 import Agents from "../models/agents.mjs";
+import Countries from "../models/countries.mjs";
 import db from "../config/database.mjs";
 
 export const findAllCustomers = async () => {
-    const customers = await Customers.findAll({include: Agents})
+    const customers = await Customers.findAll({
+        include: [
+            { model: Agents },
+            { model: Countries, as: 'country' },  // Include relasi country
+            { model: Countries, as: 'emergencyContactCountry' }  // Include relasi emergencyContactCountry
+        ]
+    });
     return customers.map(customers => customers.toJSON());
 }
 
 export const findCustomerById = async (id) => {
-    const customers = await Customers.findByPk(id, {include: Agents});
+    const customers = await Customers.findByPk(id, {
+        include: [
+            { model: Agents },
+            { model: Countries, as: 'country' },
+            { model: Countries, as: 'emergencyContactCountry' }
+        ]
+    });
     if(!customers) throw new Error('Data not found')
     return customers.toJSON();
 }
 
 export const findCustomerByName = async (name) => {
-    const customers = await Customers.findOne({where: {name}, include: Agents})
+    const customers = await Customers.findOne({
+        where: { name },
+        include: [
+            { model: Agents },
+            { model: Countries, as: 'country' },
+            { model: Countries, as: 'emergencyContactCountry' }
+        ]
+    });
     if(!customers) throw new Error('Data Not Found');
     return customers.toJSON();
 }

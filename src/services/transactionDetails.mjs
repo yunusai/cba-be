@@ -1,6 +1,10 @@
 import TransactionDetails from "../models/transactionDetails.mjs";
 import Customers from "../models/customers.mjs";
 import Products from "../models/products.mjs";
+import multer from "multer";
+import nodemailer from "nodemailer";
+import { createTransport } from "nodemailer";
+import path from "path";
 
 export const getAllTransactionDetails = async () => {
     return await TransactionDetails.findAll();
@@ -27,9 +31,10 @@ export const createTransactionDetail = async (data) => {
         throw new Error('Product not found');
     }
 
-    // Buat transactionCode di sisi service, jika tidak ingin mengandalkan hooks
-    const today = new Date().toISOString().split('T')[0];
-    const transactionCode = `${customerId}-${today}`;
+    // Buat transactionCode tanpa menggunakan tanda hubung
+    const today = new Date().toISOString().replace(/-/g, '');
+    const transactionCode = `${customerId}${today}`;
+
 
     const transactionDetail = await TransactionDetails.create({
         transactionCode,  // Masukkan transactionCode secara eksplisit
@@ -40,7 +45,8 @@ export const createTransactionDetail = async (data) => {
         tanggalSewa,
         akhirSewa,
         tanggalKirim,
-        tanggalTerima
+        tanggalTerima,
+        status: 'Pending'
     });
 
     return transactionDetail;
@@ -77,4 +83,76 @@ export const deleteTransactionDetail = async (id) => {
 
     await transactionDetails.destroy();
     return { message: `Transaction Detail with id: ${id} deleted successfully`};
+}
+
+export const checkTransactionStatus = async (transactionCode) => {
+    const transactionDetail = await TransactionDetails.findOne({ where: { transactionCode } });
+    if (!transactionDetail) throw new Error('Transaction not found');
+
+    return transactionDetail.status;  // Mengembalikan status transaksi
+}
+
+//setup multer untuk file upload
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Direktori untuk menyimpan file
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); //format nama file
+    }
+});
+
+export const upload = multer({storage: storage});
+
+//service untuk memperbari status transaksi dan mengunggah file
+export const updateTransactionStatus = async (transactionCode, status, file) => {
+    const transactionDetail = await TransactionDetails.findOne({where: {transactionCode}});
+    if(!transactionDetail) throw new Error('Transaction not found');
+
+    //Perbarui status transaksi
+    transactionDetail.status = status;
+    await transactionDetail.save();
+
+    //kirim email jika status diubah menjadi Done
+    if(status === 'Done') {
+        await sendEmailWithAttachment(transactionDetail, file);
+    }
+
+    return transactionDetail;
+}
+
+//Fungsi untuk mengirim email lampiran
+const sendEmailWithAttachment = async(transactionDetail, file) => {
+    //Ambil data customer dan product
+    const customer = await Customers.findByPk(transactionDetail.customerId);
+    const product = await Products.findByPk(transactionDetail.productId);
+
+    if(!customer || !product) {
+        throw new Error('Customer or Product not found');
+    }
+
+    //setup nodemailer
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD
+        }
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: customer.email,
+        subject: `Transaction Update: ${transactionDetail.transactionCode}`,
+        text: `Hello ${customer.name},\n\nYour transaction with code ${transactionDetail.transactionCode} has been marked as Done. Please find the attached document for your reference.\n\nRegards,\nYour Company`,
+        attachments: [
+            {
+                filename: file.originalname,
+                path: file.path
+            }
+        ]
+    };
+
+    // Kirim email
+    await transporter.sendMail(mailOptions);
 }

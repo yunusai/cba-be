@@ -98,5 +98,6 @@ router.get('/product/:id', authenticateToken, productController.getProductDetail
 router.post('/product', authenticateToken, productController.createProduct);
 router.put('/product/:id', authenticateToken, productController.updateProducts);
 router.delete('/product/:id', authenticateToken, productController.deleteProducts);
+router.get('/product/lookup', productController.lookupProducts)
 
 export default router;
