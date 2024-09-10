@@ -19,10 +19,10 @@ Products.hasMany(TransactionDetails, { foreignKey: 'productId' });
 TransactionDetails.belongsTo(Products, { foreignKey: 'productId' });
 
 //Relasi antara Countries dan Customers
-Countries.hasMany(Customers, {foreignKey: 'countryId' });
-Customers.belongsTo(Countries, {foreignKey: 'countryId'});
+Countries.hasMany(Customers, { foreignKey: 'countryId', as: 'countryData' });
+Customers.belongsTo(Countries, { foreignKey: 'countryId', as: 'countryData' });
 
-Countries.hasMany(Customers, { foreignKey: 'emergencyContactCountryId'});
-Customers.belongsTo(Countries, { foreignKey: 'emergencyContactCountryId'});
+Countries.hasMany(Customers, { foreignKey: 'emergencyContactCountryId', as: 'emergencyContactCountry' });
+Customers.belongsTo(Countries, { foreignKey: 'emergencyContactCountryId', as: 'emergencyContactCountry' });
 
 export { Agents, Customers, Products, TransactionDetails, Countries };

@@ -7,7 +7,7 @@ export const findAllCustomers = async () => {
     const customers = await Customers.findAll({
         include: [
             { model: Agents },
-            { model: Countries, as: 'country' },  // Include relasi country
+            { model: Countries, as: 'countryData' },  // Include relasi country
             { model: Countries, as: 'emergencyContactCountry' }  // Include relasi emergencyContactCountry
         ]
     });
@@ -18,7 +18,7 @@ export const findCustomerById = async (id) => {
     const customers = await Customers.findByPk(id, {
         include: [
             { model: Agents },
-            { model: Countries, as: 'country' },
+            { model: Countries, as: 'countryData' },
             { model: Countries, as: 'emergencyContactCountry' }
         ]
     });
@@ -31,7 +31,7 @@ export const findCustomerByName = async (name) => {
         where: { name },
         include: [
             { model: Agents },
-            { model: Countries, as: 'country' },
+            { model: Countries, as: 'countryData' },
             { model: Countries, as: 'emergencyContactCountry' }
         ]
     });
