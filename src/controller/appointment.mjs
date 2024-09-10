@@ -24,7 +24,7 @@ export const deleteAppointment = async (req, res) => {
     try {
         const {id} = req.params;
         const result = await appointmentService.deletAppointment(id);
-        res.josn(result);
+        res.json(result);
     } catch (error) {
         res.status(500).json({message: 'Server Error', error: error.message})
     }
