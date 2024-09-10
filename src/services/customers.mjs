@@ -1,6 +1,7 @@
 import Customers from "../models/customers.mjs";
 import Agents from "../models/agents.mjs";
 import Countries from "../models/countries.mjs";
+import { Op } from "sequelize";
 import db from "../config/database.mjs";
 
 export const findAllCustomers = async () => {
@@ -28,7 +29,11 @@ export const findCustomerById = async (id) => {
 
 export const findCustomerByName = async (name) => {
     const customers = await Customers.findOne({
-        where: { name },
+        where: {
+            fullName: {
+                [Op.like]: `%${name}%`  // Pencarian parsial, bisa di awal, tengah, atau akhir
+            }
+        },
         include: [
             { model: Agents },
             { model: Countries, as: 'countryData' },

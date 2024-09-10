@@ -50,7 +50,7 @@ export const calculateAgentPerformance = async (agentName, startDate, endDate) =
 
                 return {
                     customerId: customer.id,
-                    customerName: customer.name,
+                    customerName: customer.fullName,
                     transaction: customer.transactionDetails,
                     totalTransactions: customer.transactionDetails.length,
                     totalSpending
