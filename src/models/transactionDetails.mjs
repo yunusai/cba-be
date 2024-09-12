@@ -45,7 +45,7 @@ const TransactionDetails = db.define('transactionDetails', {
         beforeCreate: (transactionDetail) => {
             // Pastikan transactionCode tidak null atau undefined
             if(!transactionDetail.transactionCode) {
-                const today = new Date().toISOString().replace(/-/g, ''); // Format tanggal menjadi YYYY-MM-DD
+                const today = new Date().toISOString().split('T')[0].replace(/-/g, '');  // Format tanggal menjadi YYYY-MM-DD
                 transactionDetail.transactionCode = `${customerId}${today}`;
             }
         }

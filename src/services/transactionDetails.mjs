@@ -33,7 +33,7 @@ export const createTransactionDetail = async (data) => {
     }
 
     // Buat transactionCode tanpa menggunakan tanda hubung
-    const today = new Date().toISOString().replace(/-/g, '');
+    const today = new Date().toISOString().split('T')[0].replace(/-/g, ''); 
     const transactionCode = `${customerId}${today}`;
 
 
