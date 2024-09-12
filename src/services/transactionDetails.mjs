@@ -5,6 +5,7 @@ import multer from "multer";
 import nodemailer from "nodemailer";
 import { createTransport } from "nodemailer";
 import path from "path";
+import fs from 'fs'
 
 export const getAllTransactionDetails = async () => {
     return await TransactionDetails.findAll();
@@ -92,10 +93,17 @@ export const checkTransactionStatus = async (transactionCode) => {
     return transactionDetail.status;  // Mengembalikan status transaksi
 }
 
+// Buat folder uploads jika belum ada
+const uploadDir = 'uploads/';
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+
 //setup multer untuk file upload
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Direktori untuk menyimpan file
+        cb(null, uploadDir); // Direktori untuk menyimpan file
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname)); //format nama file
@@ -114,7 +122,12 @@ export const updateTransactionStatus = async (transactionCode, status, file) => 
     await transactionDetail.save();
 
     //kirim email jika status diubah menjadi Done
-    if(status === 'Done') {
+    if (status === 'Done') {
+        // Pastikan file ada sebelum kirim email
+        if (!file) {
+            throw new Error('No file provided for email attachment');
+        }
+
         await sendEmailWithAttachment(transactionDetail, file);
     }
 
@@ -144,15 +157,19 @@ const sendEmailWithAttachment = async(transactionDetail, file) => {
         from: process.env.EMAIL_USER,
         to: customer.email,
         subject: `Transaction Update: ${transactionDetail.transactionCode}`,
-        text: `Hello ${customer.name},\n\nYour transaction with code ${transactionDetail.transactionCode} has been marked as Done. Please find the attached document for your reference.\n\nRegards,\nYour Company`,
+        text: `Hello ${customer.name},\n\nYour transaction with code ${transactionDetail.transactionCode} has been marked as Done. Please find the attached document for your reference.\n\nRegards,\nCBA`,
         attachments: [
             {
                 filename: file.originalname,
-                path: file.path
+                path: path.resolve(file.path)
             }
         ]
     };
 
     // Kirim email
-    await transporter.sendMail(mailOptions);
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        throw new Error('Failed to send email with attachment: ' + error.message);
+    }
 }

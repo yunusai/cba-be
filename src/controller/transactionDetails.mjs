@@ -3,6 +3,7 @@ import Customers from "../models/customers.mjs";
 import Products from "../models/products.mjs";
 import * as transactionDetailController from "../services/transactionDetails.mjs";
 import { UpdateTransactionStatusDTO } from "../dto/updateTransactionStatusDTO.mjs";
+import multer from "multer";
 
 export const getAllTransactionDetails = async (req, res) => {
     try {
@@ -61,11 +62,20 @@ export const uploadAndUpdateTransaction = async (req, res) => {
 
         // Menggunakan middleware multer untuk mengunggah file
         transactionDetailController.upload.single('file')(req, res, async (err) => {
-            if (err) {
-                return res.status(500).json({ error: 'File upload failed' });
+            if (err instanceof multer.MulterError) {
+                return res.status(500).json({ error: 'Multer error: ' + err.message });
+            } else if (err) {
+                return res.status(500).json({ error: 'Unknown error: ' + err.message });
             }
 
+
             const file = req.file;
+
+            // Cek apakah file berhasil di-upload
+            if (!file) {
+                return res.status(400).json({ error: 'No file uploaded' });
+            }
+
 
             // Perbarui status transaksi dan unggah file
             try {
@@ -74,7 +84,7 @@ export const uploadAndUpdateTransaction = async (req, res) => {
             } catch (error) {
                 res.status(500).json({ error: error.message });
             }
-        
+
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
