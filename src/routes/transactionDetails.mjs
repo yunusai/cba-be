@@ -16,6 +16,6 @@ router.patch('/transaction-detail/update-status/:transactionCode',
       upload.single('file'),
       transactionDetailsController.uploadAndUpdateTransaction
     );
-
+router.get('/transaction-detail/snap-token/:transactionCode', transactionDetailsController.generateSnapToken);
 
 export default router;

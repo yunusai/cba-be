@@ -1,4 +1,5 @@
 import * as customerService from "../services/customers.mjs";
+import { validateCustomer } from "../middleware/validator/validateCustomers.mjs";
 
 export const getAllCustomers = async (req, res) => {
     try {
@@ -27,23 +28,29 @@ export const getCustomerByName = async (req, res) => {
     }
 };
 
-export const createCustomer = async (req, res) => {
-    try {
-        const customer = await customerService.saveCustomer(req.body);
-        res.status(201).json(customer);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+export const createCustomer = [
+    validateCustomer,  // Middleware untuk validasi data
+    async (req, res) => {
+        try {
+            const customer = await customerService.saveCustomer(req.body);
+            res.status(201).json(customer);
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
     }
-};
+];
 
-export const updateCustomer = async (req, res) => {
-    try {
-        const customer = await customerService.updateCustomer(req.params.id, req.body);
-        res.staus(200).json(customer);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+export const updateCustomer = [
+    validateCustomer,  // Middleware untuk validasi data
+    async (req, res) => {
+        try {
+            const customer = await customerService.updateCustomer(req.params.id, req.body);
+            res.status(200).json(customer);
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
     }
-};
+];
 
 export const deleteCustomer = async (req, res) => {
     try {

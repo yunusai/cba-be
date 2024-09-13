@@ -3,7 +3,7 @@ import Customers from "../models/customers.mjs";
 import Products from "../models/products.mjs";
 import multer from "multer";
 import nodemailer from "nodemailer";
-import { createTransport } from "nodemailer";
+import Midtrans from "midtrans-client";
 import path from "path";
 import fs from 'fs'
 
@@ -33,7 +33,7 @@ export const createTransactionDetail = async (data) => {
     }
 
     // Buat transactionCode tanpa menggunakan tanda hubung
-    const today = new Date().toISOString().split('T')[0].replace(/-/g, ''); 
+    const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
     const transactionCode = `${customerId}${today}`;
 
 
@@ -171,5 +171,48 @@ const sendEmailWithAttachment = async(transactionDetail, file) => {
         await transporter.sendMail(mailOptions);
     } catch (error) {
         throw new Error('Failed to send email with attachment: ' + error.message);
+    }
+}
+
+// setup Snap payment
+const snap = new Midtrans.Snap({
+    isProduction: false,
+    serverKey: process.env.MIDTRANS_SERVER_KEY,
+    clientKey: process.env.MIDTRANS_CLIENT_KEY
+});
+
+export const createSnapToken = async (transactionCode) => {
+    //cari transaksi berdasarkan transactionCode
+    const transactionDetail = await TransactionDetails.findOne({where: {transactionCode}});
+    if (!transactionDetail) throw new Error('Transaction not found');
+
+    const customer = await Customers.findByPk(transactionDetail.customerId);
+    if (!customer) throw new Error('Customer not found');
+
+    const parameter = {
+        transaction_details: {
+            order_id: transactionCode,
+            gross_amount: transactionDetail.subtotal * transactionDetail.quantity,
+        },
+        customer_details: {
+            first_name: customer.name,
+            email: customer.email,
+            phone: customer.phone_number
+        },
+        item_details: [
+            {
+                id: transactionDetail.productId,
+                price: transactionDetail.subtotal,
+                quantity: transactionDetail.quantity,
+                name: "Pembelian Service"
+            }
+        ]
+    };
+
+    try {
+        const snapResponse = await snap.createTransaction(parameter);
+        return snapResponse.token;
+    } catch (error) {
+        throw new Error('Failed to create Snap token: ' + error.message);
     }
 }
