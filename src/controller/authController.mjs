@@ -40,3 +40,43 @@ export const handleLogout = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+// Get all agents
+export const getAllAgents = async (req, res) => {
+    try {
+        const agents = await authService.findAllAgents();
+        res.status(200).json(agents);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get agent detail by ID
+export const getAgentById = async (req, res) => {
+    try {
+        const agent = await authService.findAgentById(req.params.id);
+        res.status(200).json(agent);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
+
+// Update agent
+export const updateAgent = async (req, res) => {
+    try {
+        const updatedAgent = await authService.updateAgent(req.params.id, req.body);
+        res.status(200).json(updatedAgent);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Delete agent
+export const deleteAgent = async (req, res) => {
+    try {
+        await authService.deleteAgent(req.params.id);
+        res.status(204).end();
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};

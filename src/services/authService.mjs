@@ -48,3 +48,39 @@ export const logout = async (agentId) => {
     await Agents.update({refreshToken: null}, {where: {id: agentId}});
     return {message: 'logout success'}
 }
+
+// Get all agents
+export const findAllAgents = async () => {
+    const agents = await Agents.findAll();
+    return agents.map(agent => agent.toJSON());
+}
+
+// Get agent by ID (Detail)
+export const findAgentById = async (id) => {
+    const agent = await Agents.findByPk(id);
+    if (!agent) throw new Error('Agent not found');
+    return agent.toJSON();
+}
+
+// Update agent
+export const updateAgent = async (id, agentData) => {
+    const agent = await Agents.findByPk(id);
+    if (!agent) throw new Error('Agent not found');
+
+    const hashedPassword = agentData.password ? await bcrypt.hash(agentData.password, 10) : agent.password;
+    await agent.update({
+        ...agentData,
+        password: hashedPassword
+    });
+
+    return agent.toJSON();
+}
+
+// Delete agent
+export const deleteAgent = async (id) => {
+    const agent = await Agents.findByPk(id);
+    if (!agent) throw new Error('Agent not found');
+
+    await agent.destroy();
+    return { message: 'Agent deleted successfully' };
+}
