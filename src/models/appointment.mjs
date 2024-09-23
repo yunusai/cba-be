@@ -31,15 +31,6 @@ const Appointments = db.define('appointments', {
     consultationType: {
         type: DataTypes.STRING,
         allowNull: false
-    },
-    status: {
-        type: DataTypes.ENUM('Pending', 'On Progress', 'Finished'),
-        defaultValue: 'Pending',
-        allowNull: false,
-    },
-    filePath: {
-        type: DataTypes.STRING,
-        allowNull: true
     }
 })
 

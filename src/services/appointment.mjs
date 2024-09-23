@@ -1,31 +1,28 @@
 import Appointments from "../models/appointment.mjs";
-import path from "path";
-import fs from 'fs';
-import multer from "multer";
+// import path from "path";
+// import fs from 'fs';
+// import multer from "multer";
 
 // Buat folder uploads jika belum ada
-const uploadDir = 'appointments-proposal/';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
+// const uploadDir = 'appointments-proposal/';
+// if (!fs.existsSync(uploadDir)) {
+//     fs.mkdirSync(uploadDir);
+// }
 
 //setup multer untuk file upload
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir); // Direktori untuk menyimpan file
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname); // Menggunakan nama asli file
-    }
-});
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, uploadDir); // Direktori untuk menyimpan file
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, file.originalname); // Menggunakan nama asli file
+//     }
+// });
 
-export const upload = multer({ storage: storage });
+//export const upload = multer({ storage: storage });
 
-export const createAppointment = async (appointmentData, file) => {
+export const createAppointment = async (appointmentData) => {
     try {
-        if (file) {
-            appointmentData.filePath = file.path;
-        }
         const appointment = await Appointments.create(appointmentData);
         return appointment.toJSON();
     } catch (error) {
@@ -33,32 +30,19 @@ export const createAppointment = async (appointmentData, file) => {
     }
 }
 
-export const updateAppointmentStatus = async (id, status) => {
-    try {
-        const appointment = await Appointments.findByPk(id);
-        if(!appointment) {
-            throw new Error('Appointment not found')
-        }
-        appointment.status = status;
-        await appointment.save()
-        return appointment.toJSON();
-    } catch (error) {
-        throw new Error('Failed to update appointment status: ' + error.message);
-    }
-}
 
-export const deletAppointment = async (id) => {
+export const deleteAppointment = async (id) => {
     try {
         const appointment = await Appointments.findByPk(id);
-        if(!appointment) {
-            throw new Error('Appointment not found')
+        if (!appointment) {
+            throw new Error('Appointment not found');
         }
-        await appointment.destroy()
-        return { message: 'Appointment deleted successfully'}
+        await appointment.destroy();
+        return { message: 'Appointment deleted successfully' };
     } catch (error) {
-        throw new Error('Failed to delete appointment: '+error.message);
+        throw new Error('Failed to delete appointment: ' + error.message);
     }
-}
+};
 
 export const getAllAppointments = async () => {
     try {
@@ -69,11 +53,14 @@ export const getAllAppointments = async () => {
     }
 }
 
-export const getAppointmentByStatus = async (status) => {
+export const getAppointmentById = async (id) => {
     try {
-        const appointment = await Appointments.findAll({where: {status}});
-        return appointment.map(appointment => appointment.toJSON());
+        const appointment = await Appointments.findByPk(id);
+        if (!appointment) {
+            throw new Error('Appointment not found');
+        }
+        return appointment.toJSON();
     } catch (error) {
-        throw new Error('Failed to fetch appointment by status: '+ error.message)
+        throw new Error('Failed to fetch appointment: ' + error.message);
     }
-}
+};
