@@ -150,8 +150,8 @@ const router = express.Router();
  *       '204':
  *         description: Customer deleted successfully
  */
-router.get('/customers', authenticateToken, customerController.getAllCustomers);
-router.get('/customers/:id', authenticateToken, customerController.getCustomerById);
+router.get('/customers', customerController.getAllCustomers);
+router.get('/customers/:id', customerController.getCustomerById);
 router.get('/customers/name/:name', authenticateToken, customerController.getCustomerByName);
 router.post('/customers', customerController.createCustomer); //untuk create customers baru bisa dilakukan oleh customers itu sendiri
 router.put('/customers/:id', authenticateToken, customerController.updateCustomer);

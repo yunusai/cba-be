@@ -1,11 +1,14 @@
 import * as productService from "../services/products.mjs";
+import Categories from "../models/categories.mjs";
 
 export const getAllProducts = async (req, res) => {
     try {
-        const products = await productService.findAllProducts();
+        const categoryId = req.query.categoryId;
+        const isAuthorized = req.user ? true : false; // User memiliki token atau tidak
+        const products = await productService.findAllProducts(categoryId, isAuthorized);
         res.json(products);
     } catch (error) {
-        res.status(500).json({message: error.message})
+        res.status(500).json({ message: error.message });
     }
 }
 

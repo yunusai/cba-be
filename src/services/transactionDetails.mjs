@@ -175,8 +175,8 @@ const sendEmailWithAttachment = async(transactionDetail, file) => {
 }
 
 // setup Snap payment
-const snap = new Midtrans.Snap({
-    isProduction: true,
+let snap = new Midtrans.Snap({
+    isProduction: false,
     serverKey: process.env.MIDTRANS_SERVER_KEY,
     clientKey: process.env.MIDTRANS_CLIENT_KEY
 });

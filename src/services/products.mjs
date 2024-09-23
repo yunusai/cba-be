@@ -1,4 +1,6 @@
 import Products from "../models/products.mjs";
+import Categories from "../models/categories.mjs";
+import { Sequelize } from "sequelize";
 
 export const createProducts = async (data) => {
     try {
@@ -31,9 +33,26 @@ export const deleteProduct = async (id) => {
     await products.destroy();
 }
 
-export const findAllProducts = async () =>{
-    const products = await Products.findAll();
-    return products.map(product => product.toJSON());
+export const findAllProducts = async (categoryId, isAuthorized) => {
+    try {
+        const queryOptions = {
+            where: {},
+            include: [{ model: Categories, attributes: ['category'] }]
+        };
+
+        if (categoryId) {
+            queryOptions.where.categoryId = categoryId;
+        }
+
+        if (!isAuthorized) {
+            queryOptions.where.price = { [Sequelize.Op.lte]: 15000000 }; // Filter harga di bawah 15 juta
+        }
+
+        const products = await Products.findAll(queryOptions);
+        return products.map(product => product.toJSON());
+    } catch (error) {
+        throw new Error('Failed to fetch products: ' + error.message);
+    }
 }
 
 export const getDetailProducts = async (id) => {

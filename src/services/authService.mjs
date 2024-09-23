@@ -51,30 +51,44 @@ export const logout = async (agentId) => {
 
 // Get all agents
 export const findAllAgents = async () => {
-    const agents = await Agents.findAll();
+    const agents = await Agents.findAll({
+        attributes: ['id', 'name', 'email', 'role'] // Hanya tampilkan fields yang diperlukan
+    });
     return agents.map(agent => agent.toJSON());
-}
-
+};
 // Get agent by ID (Detail)
 export const findAgentById = async (id) => {
-    const agent = await Agents.findByPk(id);
-    if (!agent) throw new Error('Agent not found');
-    return agent.toJSON();
-}
-
-// Update agent
-export const updateAgent = async (id, agentData) => {
-    const agent = await Agents.findByPk(id);
-    if (!agent) throw new Error('Agent not found');
-
-    const hashedPassword = agentData.password ? await bcrypt.hash(agentData.password, 10) : agent.password;
-    await agent.update({
-        ...agentData,
-        password: hashedPassword
+    const agent = await Agents.findByPk(id, {
+        attributes: ['id', 'name', 'email', 'role'] // Hanya tampilkan fields yang diperlukan
     });
 
+    if (!agent) {
+        throw new Error('Agent not found');
+    }
+
     return agent.toJSON();
-}
+};
+
+// Update agent
+export const updateAgent = async (id, updateData) => {
+    // Filter hanya fields yang boleh diupdate
+    const { name, email, role } = updateData;
+
+    const agent = await Agents.findByPk(id);
+    if (!agent) {
+        throw new Error(`Agent not found with ID ${id}`);
+    }
+
+    // Update hanya fields name, email, dan role
+    await agent.update({ name, email, role });
+
+    return {
+        id: agent.id,
+        name: agent.name,
+        email: agent.email,
+        role: agent.role,
+    };
+};
 
 // Delete agent
 export const deleteAgent = async (id) => {

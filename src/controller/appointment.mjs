@@ -5,7 +5,7 @@ export const createAppointment = async (req, res) => {
         const appointment = await appointmentService.createAppointment(req.body);
         res.json(appointment);
     } catch (error) {
-        res.status(500).josn({message: 'Server Error', error: error.message})
+        res.status(500).json({message: 'Server Error', error: error.message})
     }
 }
 

@@ -4,7 +4,11 @@ import db from "../config/database.mjs";
 const {DataTypes} = Sequelize;
 
 const Products = db.define('products', {
-    name: {
+    visaName: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    service: {
         type: DataTypes.STRING,
         allowNull: false
     },
@@ -14,6 +18,10 @@ const Products = db.define('products', {
     },
     image: {
         type: DataTypes.STRING,
+    },
+    categoryId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 })
 

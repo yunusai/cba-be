@@ -1,7 +1,31 @@
 import Appointments from "../models/appointment.mjs";
+import path from "path";
+import fs from 'fs';
+import multer from "multer";
 
-export const createAppointment = async (appointmentData) => {
+// Buat folder uploads jika belum ada
+const uploadDir = 'appointments-proposal/';
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+//setup multer untuk file upload
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir); // Direktori untuk menyimpan file
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname); // Menggunakan nama asli file
+    }
+});
+
+export const upload = multer({ storage: storage });
+
+export const createAppointment = async (appointmentData, file) => {
     try {
+        if (file) {
+            appointmentData.filePath = file.path;
+        }
         const appointment = await Appointments.create(appointmentData);
         return appointment.toJSON();
     } catch (error) {
