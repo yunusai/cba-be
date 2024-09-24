@@ -1,10 +1,10 @@
 import express from 'express'
 import * as productController from '../controller/products.mjs'
-import { authenticateToken, authorizeRole } from '../middleware/authMiddleware.mjs';
+import { authenticateToken, optionalAuth } from '../middleware/authMiddleware.mjs';
 
 const router = express.Router();
 
-router.get('/product', productController.getAllProducts);
+router.get('/product', optionalAuth, productController.getAllProducts);
 router.get('/product/:id', productController.getProductDetails);
 router.post('/product', authenticateToken, productController.createProduct);
 router.put('/product/:id', authenticateToken, productController.updateProducts);

@@ -20,7 +20,7 @@ export const login = async (email, password) => {
     const match = await bcrypt.compare(password, agent.password);
     if(!match) throw new Error('Invalid email or password');
 
-    const accessToken = jwt.sign({id: agent.id, role: agent.role}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
+    const accessToken = jwt.sign({id: agent.id, role: agent.role}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '60m'});
     const refreshToken = jwt.sign({id: agent.id, role: agent.role}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '7d'});
 
     agent.refreshToken = refreshToken;
@@ -37,7 +37,7 @@ export const refreshToken = async (refreshToken) => {
 
     try {
         jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-        const accessToken = jwt.sign({ id: agent.id, role: agent.role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+        const accessToken = jwt.sign({ id: agent.id, role: agent.role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '60m' });
         return { accessToken };
     } catch (err) {
         throw new Error('Invalid Refresh Token');
