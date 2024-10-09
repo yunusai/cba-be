@@ -1,4 +1,5 @@
 import TransactionDetails from "../models/transactionDetails.mjs";
+import TransactionCustomers from "../models/transactionCustomers.mjs";
 import Customers from "../models/customers.mjs";
 import Products from "../models/products.mjs";
 import multer from "multer";
@@ -19,14 +20,9 @@ export const getTransactionDetailById = async (id) => {
 }
 
 export const createTransactionDetail = async (data) => {
-    const { customerId, productId, quantity, subtotal, tanggalSewa, akhirSewa, tanggalKirim, tanggalTerima } = data;
+    const { customerIds, productId, subtotal, tanggalSewa, akhirSewa, tanggalKirim, tanggalTerima } = data;
 
-    const customer = await Customers.findByPk(customerId);
     const product = await Products.findByPk(productId);
-
-    if (!customer) {
-        throw new Error('Customer not found');
-    }
 
     if (!product) {
         throw new Error('Product not found');
@@ -34,14 +30,13 @@ export const createTransactionDetail = async (data) => {
 
     // Buat transactionCode tanpa menggunakan tanda hubung
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    const transactionCode = `${customerId}${today}`;
+    const transactionCode = `${customerIds[0]}${today}`;
 
 
     const transactionDetail = await TransactionDetails.create({
         transactionCode,  // Masukkan transactionCode secara eksplisit
-        customerId,
         productId,
-        quantity,
+        quantity: customerIds.length,
         subtotal,
         tanggalSewa,
         akhirSewa,
@@ -50,22 +45,30 @@ export const createTransactionDetail = async (data) => {
         status: 'Pending'
     });
 
+    for (const customerId of customerIds) {
+        const customer = await Customers.findByPk(customerId);
+        if (!customer) throw new Error(`Customer with ID ${customerId} not found`);
+
+        await TransactionCustomers.create({
+            transactionId: transactionDetail.id,
+            customerId
+        });
+    }
+
     return transactionDetail;
 };
 
 export const updateTransactionDetail = async (id, data) => {
-    const { customerId, productId, quantity, subtotal, tanggalSewa, akhirSewa, tanggalKirim, tanggalTerima } = data;
+    const { customerIds, productId, quantity, subtotal, tanggalSewa, akhirSewa, tanggalKirim, tanggalTerima } = data;
     const transactionDetails = await TransactionDetails.findByPk(id);
 
     if(!transactionDetails) throw new Error('Transaction detail not found');
 
-    const customers = await Customers.findByPk(customerId);
     const products = await Products.findByPk(productId);
-    if (!customers || !products) {
-        throw new Error('Customer or Product not found');
+    if (!products) {
+        throw new Error('Product not found');
     }
 
-    transactionDetails.customerId = customerId;
     transactionDetails.product = productId;
     transactionDetails.quantity = quantity;
     transactionDetails.subtotal = subtotal;
@@ -75,6 +78,17 @@ export const updateTransactionDetail = async (id, data) => {
     transactionDetails.tanggalTerima = tanggalTerima;
 
     await transactionDetails.save();
+
+    await TransactionCustomers.destroy({ where: { transactionId: id } });
+    for (const customerId of customerIds) {
+        const customer = await Customers.findByPk(customerId);
+        if (!customer) throw new Error(`Customer with ID ${customerId} not found`);
+
+        await TransactionCustomers.create({
+            transactionId: transactionDetails.id,
+            customerId
+        });
+    }
     return transactionDetails;
 }
 

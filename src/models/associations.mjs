@@ -2,6 +2,7 @@ import Agents from './agents.mjs';
 import Customers from './customers.mjs';
 import Products from './products.mjs';
 import TransactionDetails from './transactionDetails.mjs';
+import TransactionCustomers from './transactionCustomers.mjs';
 import Countries from './countries.mjs';
 import Categories from './categories.mjs';
 
@@ -11,10 +12,15 @@ import Categories from './categories.mjs';
 Agents.hasMany(Customers, { foreignKey: 'agentId' });
 Customers.belongsTo(Agents, { foreignKey: 'agentId' });
 
-// Relasi antara Customers dan TransactionDetails
-Customers.hasMany(TransactionDetails, { foreignKey: 'customerId' });
-TransactionDetails.belongsTo(Customers, { foreignKey: 'customerId' });
-
+// Relasi antara Customers dan TransactionDetails melalui TransactionCustomer
+Customers.belongsToMany(TransactionDetails, {
+    through: TransactionCustomers,
+    foreignKey: 'customerId',
+});
+TransactionDetails.belongsToMany(Customers, {
+    through: TransactionCustomers,
+    foreignKey: 'transactionId',
+});
 // Relasi antara Products dan TransactionDetails
 Products.hasMany(TransactionDetails, { foreignKey: 'productId' });
 TransactionDetails.belongsTo(Products, { foreignKey: 'productId' });
@@ -30,4 +36,4 @@ Customers.belongsTo(Countries, { foreignKey: 'emergencyContactCountryId', as: 'e
 Categories.hasMany(Products, {foreignKey: 'categoryId'});
 Products.belongsTo(Categories, {foreignKey: 'categoryId'})
 
-export { Agents, Customers, Products, TransactionDetails, Countries };
+export { Agents, Customers, Products, TransactionDetails, TransactionCustomers, Countries };

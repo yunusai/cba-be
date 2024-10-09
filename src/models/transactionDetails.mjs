@@ -32,10 +32,6 @@ const TransactionDetails = db.define('transactionDetails', {
     tanggalTerima: {
         type: DataTypes.DATEONLY,
     },
-    customerId: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
     productId: {
         type: DataTypes.INTEGER,
         allowNull: false
@@ -51,5 +47,7 @@ const TransactionDetails = db.define('transactionDetails', {
         }
     }
 })
+
+
 
 export default TransactionDetails;

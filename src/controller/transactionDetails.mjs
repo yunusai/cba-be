@@ -30,9 +30,9 @@ export const createTransactionDetail = async (req, res) => {
         const transactionDetails = await transactionDetailController.createTransactionDetail(req.body);
         res.json(transactionDetails);
     } catch (error) {
-        res.status(400).json({message: 'Server Error', error: error.message});
+        res.status(400).json({ message: 'Server Error', error: error.message });
     }
-}
+};
 
 export const updateTransactionDetail = async (req, res) => {
     try {
