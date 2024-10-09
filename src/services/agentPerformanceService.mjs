@@ -1,4 +1,4 @@
-import { Agents, Customers, TransactionDetails } from '../models/associations.mjs';
+import { Agents, Customers, TransactionDetails, TransactionCustomers } from '../models/associations.mjs';
 import { Op, fn, col } from 'sequelize'; // Tambahkan fn dan col
 import moment from 'moment'
 
@@ -16,7 +16,6 @@ export const calculateAgentPerformance = async (agentName, startDate, endDate) =
             where: {
                 name: {
                     [Op.like]: `%${lowerCaseAgentName}%` // case-insensitive search
-
                 }
             },
             include: [
@@ -24,18 +23,23 @@ export const calculateAgentPerformance = async (agentName, startDate, endDate) =
                     model: Customers,
                     include: [
                         {
-                            model: TransactionDetails,
-                            where: {
-                                createdAt: {
-                                    [Op.between]: [startDate, endDate]
+                            model: TransactionCustomers,  // Relasi antara Customers dan TransactionDetails sekarang melalui TransactionCustomers
+                            include: [
+                                {
+                                    model: TransactionDetails, // Mengambil TransactionDetails dari TransactionCustomers
+                                    where: {
+                                        createdAt: {
+                                            [Op.between]: [startDate, endDate]
+                                        }
+                                    }
                                 }
-                            }
+                            ]
                         }
                     ]
                 }
             ]
         });
-        console.log(agent.agentName);
+
         if (!agent) {
             throw new Error('Agent not found');
         }
@@ -45,20 +49,26 @@ export const calculateAgentPerformance = async (agentName, startDate, endDate) =
             agentId: agent.id,
             agentName: agent.name,
             customers: agent.customers.map(customer => {
-                // Hitung total spending untuk customer
-                const totalSpending = customer.transactionDetails.reduce((sum, trx) => sum + (trx.subtotal * trx.quantity), 0);
+                // Hitung total spending untuk customer melalui TransactionCustomers
+                const totalSpending = customer.transactionCustomers.reduce((sum, trxCustomer) => {
+                    const trx = trxCustomer.transactionDetail;
+                    return sum + (trx.subtotal * trx.quantity);
+                }, 0);
 
                 return {
                     customerId: customer.id,
                     customerName: customer.fullName,
-                    transaction: customer.transactionDetails,
-                    totalTransactions: customer.transactionDetails.length,
+                    transaction: customer.transactionCustomers.map(trxCustomer => trxCustomer.transactionDetail), // Akses transactionDetails melalui TransactionCustomers
+                    totalTransactions: customer.transactionCustomers.length,
                     totalSpending
                 };
             }),
             totalCustomers: agent.customers.length,
             totalSpending: agent.customers.reduce((sum, customer) =>
-                sum + customer.transactionDetails.reduce((sum, trx) => sum + (trx.subtotal * trx.quantity), 0), 0
+                sum + customer.transactionCustomers.reduce((sum, trxCustomer) => {
+                    const trx = trxCustomer.transactionDetail;
+                    return sum + (trx.subtotal * trx.quantity);
+                }, 0), 0
             )
         };
         return performance;
