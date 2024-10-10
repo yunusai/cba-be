@@ -20,7 +20,7 @@ export const getTransactionDetailById = async (id) => {
 }
 
 export const createTransactionDetail = async (data) => {
-    const { customerIds, productId, subtotal, tanggalSewa, akhirSewa, tanggalKirim, tanggalTerima } = data;
+    const { customerIds, productId, subtotal} = data;
 
     const product = await Products.findByPk(productId);
 
@@ -38,10 +38,10 @@ export const createTransactionDetail = async (data) => {
         productId,
         quantity: customerIds.length,
         subtotal,
-        tanggalSewa,
-        akhirSewa,
-        tanggalKirim,
-        tanggalTerima,
+        tanggalSewa: null,
+        akhirSewa: null,
+        tanggalKirim: null,
+        tanggalTerima: null,
         status: 'Pending'
     });
 
@@ -59,7 +59,7 @@ export const createTransactionDetail = async (data) => {
 };
 
 export const updateTransactionDetail = async (id, data) => {
-    const { customerIds, productId, quantity, subtotal, tanggalSewa, akhirSewa, tanggalKirim, tanggalTerima } = data;
+    const { customerIds, productId, quantity, subtotal} = data;
     const transactionDetails = await TransactionDetails.findByPk(id);
 
     if(!transactionDetails) throw new Error('Transaction detail not found');
@@ -72,10 +72,6 @@ export const updateTransactionDetail = async (id, data) => {
     transactionDetails.product = productId;
     transactionDetails.quantity = quantity;
     transactionDetails.subtotal = subtotal;
-    transactionDetails.tanggalSewa = tanggalSewa;
-    transactionDetails.akhirSewa = akhirSewa;
-    transactionDetails.tanggalKirim = tanggalKirim;
-    transactionDetails.tanggalTerima = tanggalTerima;
 
     await transactionDetails.save();
 
