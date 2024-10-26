@@ -18,7 +18,9 @@ export const getTransactionDetailById = async (req, res) => {
     try {
         const { id } = req.params;
         const transactionDetails = await transactionDetailController.getTransactionDetailById(id);
-
+        if (!transactionDetails) {
+            return res.status(404).json({ message: 'Transaction detail not found' });
+        }
         res.json(transactionDetails);
     } catch (error) {
         res.status(404).json({message: 'Server Error', error: error.message});
@@ -58,34 +60,19 @@ export const uploadAndUpdateTransaction = async (req, res) => {
     try {
         const { transactionCode } = req.params;
         const { status } = req.body;
-        UpdateTransactionStatusDTO.validate({transactionCode, status});
+        UpdateTransactionStatusDTO.validate({ transactionCode, status });
 
-        // Menggunakan middleware multer untuk mengunggah file
-        transactionDetailController.upload.single('file')(req, res, async (err) => {
-            if (err instanceof multer.MulterError) {
-                return res.status(500).json({ error: 'Multer error: ' + err.message });
-            } else if (err) {
-                return res.status(500).json({ error: 'Unknown error: ' + err.message });
-            }
+        const file = req.file; // Mengambil file yang di-upload
 
+        // Cek apakah file berhasil di-upload
+        if (!file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
 
-            const file = req.file;
+        // Perbarui status transaksi dan unggah file
+        const transactionDetail = await transactionDetailController.updateTransactionStatus(transactionCode, status, file);
+        res.json(transactionDetail);
 
-            // Cek apakah file berhasil di-upload
-            if (!file) {
-                return res.status(400).json({ error: 'No file uploaded' });
-            }
-
-
-            // Perbarui status transaksi dan unggah file
-            try {
-                const transactionDetail = await transactionDetailController.updateTransactionStatus(transactionCode, status, file);
-                res.json(transactionDetail);
-            } catch (error) {
-                res.status(500).json({ error: error.message });
-            }
-
-        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -107,5 +94,29 @@ export const generateSnapToken = async (req, res) => {
         res.json({ snapToken });
     } catch (error) {
         res.status(500).json({ message: 'Error generating Snap token', error: error.message });
+    }
+};
+
+// Payment Notification Handler dari Midtrans
+export const paymentNotificationHandler = async (req, res) => {
+    const notification = req.body;
+
+    try {
+        await transactionDetailController.handleMidtransNotification(notification);
+        res.status(200).send('Notification handled');
+    } catch (error) {
+        res.status(500).send('Failed to handle notification');
+    }
+};
+
+// Update Status Order secara manual
+export const updateOrderStatus = async (req, res) => {
+    const { orderId, newStatus } = req.body;
+
+    try {
+        await transactionDetailController.updateOrderStatus(orderId, newStatus);
+        res.status(200).send('Order status updated');
+    } catch (error) {
+        res.status(500).send('Failed to update order status');
     }
 };

@@ -64,7 +64,7 @@ export const getDetailProducts = async (id) => {
 
 export const lookupProducts = async () => {
     const products = await Products.findAll({
-        attributes: ['id', 'name', 'price'], // Specify the attributes needed
+        attributes: ['id', 'productName', 'price', 'additionalCost'], // Tambahkan 'additionalCost'
     });
     return products.map(product => product.toJSON());
 };

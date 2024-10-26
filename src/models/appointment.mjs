@@ -16,7 +16,7 @@ const Appointments = db.define('appointments', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    date: {
+    dateAppointment: {
         type: DataTypes.DATE,
         allowNull: false
     },
@@ -25,13 +25,18 @@ const Appointments = db.define('appointments', {
         allowNull: true,
     },
     service: {
-        type: DataTypes.ENUM('Company Information', 'Legal Document', 'License', 'Other Services'),
+        type: DataTypes.ENUM('Immigration', 'Legal'),
         allowNull: false
     },
     consultationType: {
         type: DataTypes.STRING,
         allowNull: false
-    }
+    },
+    status: {  // Kolom status
+        type: DataTypes.ENUM('Waiting', 'Cancelled', 'Success'),
+        allowNull: true
+    },
+
 })
 
 export default Appointments;

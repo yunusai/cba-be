@@ -8,9 +8,19 @@ import transactionFinalRoutes from './transationFinals.mjs'
 import customersRoutes from './customers.mjs'
 import countiresRoutes from './countries.mjs'
 import categoryRoutes from './categories.mjs'
+import path from 'path';
+import { fileURLToPath } from "url";
 
 
 const router = express.Router();
+
+// Menentukan __dirname secara manual
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+// Rute untuk mengakses file publik
+router.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 router.use(agentReview);
 router.use(productRoutes);

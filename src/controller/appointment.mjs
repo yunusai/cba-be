@@ -38,3 +38,19 @@ export const getAppointmentById = async (req, res) => {
         res.status(404).json({ message: 'Appointment not found', error: error.message });
     }
 };
+
+export const updateAppointmentStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body; // Ambil status baru dari request body
+
+        if (!['Cancelled', 'Success'].includes(status)) {
+            return res.status(400).json({ message: "Invalid status. Use 'Cancelled' or 'Success'." });
+        }
+
+        const updatedAppointment = await appointmentService.updateAppointmentStatus(id, status);
+        res.json(updatedAppointment);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to update appointment status', error: error.message });
+    }
+};

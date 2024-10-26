@@ -22,7 +22,7 @@ app.use(router);
 try {
     await db.authenticate();
     console.log('Database Connected...')
-    await db.sync(); //to automate generate
+    await db.sync({alter: true}); //to automate generate
 } catch (error) {
     console.error(error.message);
 }

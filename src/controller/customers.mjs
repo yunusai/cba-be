@@ -1,5 +1,6 @@
 import * as customerService from "../services/customers.mjs";
 import { validateCustomer } from "../middleware/validator/validateCustomers.mjs";
+import { uploadFiles } from "../services/customers.mjs";
 
 export const getAllCustomers = async (req, res) => {
     try {
@@ -29,10 +30,11 @@ export const getCustomerByName = async (req, res) => {
 };
 
 export const createCustomer = [
+    uploadFiles, //untuk upload files
     validateCustomer,  // Middleware untuk validasi data
     async (req, res) => {
         try {
-            const customer = await customerService.saveCustomer(req.body);
+            const customer = await customerService.saveCustomer(req.body, req.files);
             res.status(201).json(customer);
         } catch (error) {
             res.status(400).json({ message: error.message });

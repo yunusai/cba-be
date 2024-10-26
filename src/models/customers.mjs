@@ -87,6 +87,22 @@ const Customers = db.define('customers',{
     agentId: {
         type:DataTypes.INTEGER,
         allowNull: false
+    },
+    passport: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    visa: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    photo: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    docPendukung: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 })
 

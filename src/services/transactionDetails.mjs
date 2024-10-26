@@ -2,18 +2,44 @@ import TransactionDetails from "../models/transactionDetails.mjs";
 import TransactionCustomers from "../models/transactionCustomers.mjs";
 import Customers from "../models/customers.mjs";
 import Products from "../models/products.mjs";
+import Agents from "../models/agents.mjs";
+import { generateInvoice } from "../middleware/generateInvoice.mjs";
 import multer from "multer";
 import nodemailer from "nodemailer";
-import Midtrans from "midtrans-client";
+import { Midtrans } from "midtrans-client";
 import path from "path";
 import fs from 'fs'
 
 export const getAllTransactionDetails = async () => {
-    return await TransactionDetails.findAll();
+    return await TransactionDetails.findAll({
+        include: [
+            {
+                model: Products,
+                attributes: ['productName', 'price', 'service'] // Kolom yang diambil dari Products
+            },
+            {
+                model: Customers,
+                through: { attributes: [] }, // Mengosongkan kolom dari tabel perantara jika tidak diperlukan
+                attributes: ['fullName', 'email', 'phoneNumber'] // Kolom yang diambil dari Customers
+            }
+        ]
+    });
 }
 
 export const getTransactionDetailById = async (id) => {
-    const transactionDetails = await TransactionDetails.findByPk(id);
+    const transactionDetails = await TransactionDetails.findByPk(id, {
+        include: [
+            {
+                model: Products,
+                attributes: ['productName', 'price', 'service'] // Kolom yang diambil dari Products
+            },
+            {
+                model: Customers,
+                through: { attributes: [] }, // Mengosongkan kolom dari tabel perantara jika tidak diperlukan
+                attributes: ['fullName', 'email', 'phoneNumber'] // Kolom yang diambil dari Customers
+            }
+        ]
+    });
     if (!transactionDetails) throw new Error('Transaction Detail not found');
 
     return transactionDetails;
@@ -32,17 +58,18 @@ export const createTransactionDetail = async (data) => {
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
     const transactionCode = `${customerIds[0]}${today}`;
 
-
+    const totalSubtotal = subtotal + (product.additionalCost || 0);
     const transactionDetail = await TransactionDetails.create({
         transactionCode,  // Masukkan transactionCode secara eksplisit
         productId,
         quantity: customerIds.length,
-        subtotal,
+        subtotal: totalSubtotal,
+        orderStatus: 'Pending',       // Default untuk orderStatus
+        transactionStatus: 'Pending',   // Default untuk transactionStatus
         tanggalSewa: null,
         akhirSewa: null,
         tanggalKirim: null,
-        tanggalTerima: null,
-        status: 'Pending'
+        tanggalTerima: null
     });
 
     for (const customerId of customerIds) {
@@ -55,7 +82,56 @@ export const createTransactionDetail = async (data) => {
         });
     }
 
+    // Ambil customer pertama untuk detail invoice
+    const primaryCustomer = await Customers.findByPk(customerIds[0], {
+        include: [{ model: Agents, attributes: ['name'] }]
+    });
+    if (!primaryCustomer) throw new Error('Primary customer not found');
+
+    const agent = await Agents.findByPk(primaryCustomer.agentId, {
+
+    })
+
+    const invoiceData = {
+        service: product.productName,
+        totalPerson: customerIds.length,
+        referral: agent.name,
+        fullname: primaryCustomer.fullName,
+        email: primaryCustomer.email,
+        phone: primaryCustomer.phoneNumber,
+        paymentStatus: 'Pending'
+    }
+
+    const invoicePath = generateInvoice(invoiceData, transactionDetail.invoiceNumber)
+
+    await sendInvoiceEmail(invoiceData.email, invoicePath);
+
     return transactionDetail;
+};
+
+const sendInvoiceEmail = async (recipientEmail, invoicePath) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail', // atau provider email lainnya
+        auth: {
+            user: process.env.EMAIL_USER, // Ganti dengan email Anda
+            pass: process.env.EMAIL_PASSWORD // Ganti dengan password Anda
+        }
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: 'juanadhiastapersonal@gmail.com',//recipientEmail,
+        subject: 'Your Invoice',
+        text: 'Please find attached your invoice.',
+        attachments: [
+            {
+                filename: 'invoice.pdf',
+                path: invoicePath
+            }
+        ]
+    };
+
+    await transporter.sendMail(mailOptions);
 };
 
 export const updateTransactionDetail = async (id, data) => {
@@ -103,6 +179,11 @@ export const checkTransactionStatus = async (transactionCode) => {
     return transactionDetail.status;  // Mengembalikan status transaksi
 }
 
+// Fungsi untuk pembaruan status order secara manual
+export const updateOrderStatus = async (orderId, newStatus) => {
+    await TransactionOrder.update({ orderStatus: newStatus }, { where: { orderId } });
+};
+
 // Buat folder uploads jika belum ada
 const uploadDir = 'uploads/';
 if (!fs.existsSync(uploadDir)) {
@@ -128,7 +209,7 @@ export const updateTransactionStatus = async (transactionCode, status, file) => 
     if(!transactionDetail) throw new Error('Transaction not found');
 
     //Perbarui status transaksi
-    transactionDetail.status = status;
+    transactionDetail.orderStatus = status;
     await transactionDetail.save();
 
     //kirim email jika status diubah menjadi Done
@@ -147,12 +228,26 @@ export const updateTransactionStatus = async (transactionCode, status, file) => 
 //Fungsi untuk mengirim email lampiran
 const sendEmailWithAttachment = async(transactionDetail, file) => {
     //Ambil data customer dan product
-    const customer = await Customers.findByPk(transactionDetail.customerId);
+    // Ambil semua customer yang terkait dengan transactionDetail
+    const customers = await Customers.findAll({
+        include: [{
+            model: TransactionDetails,
+            where: { id: transactionDetail.id } // Ambil customer yang terhubung dengan transactionDetail
+        }]
+    });
     const product = await Products.findByPk(transactionDetail.productId);
 
-    if(!customer || !product) {
-        throw new Error('Customer or Product not found');
+    if(!product) {
+        throw new Error('Product not found');
     }
+
+    // Pastikan ada customer sebelum mengirim email
+    if (customers.length === 0) {
+        throw new Error('No customer found for this transaction');
+    }
+
+    // Ambil customer pertama
+    const customer = customers[0];
 
     //setup nodemailer
     let transporter = nodemailer.createTransport({
@@ -165,7 +260,7 @@ const sendEmailWithAttachment = async(transactionDetail, file) => {
 
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: customer.email,
+        to: 'juanadhiastapersonal@gmail.com',//customer.email,
         subject: `Transaction Update: ${transactionDetail.transactionCode}`,
         text: `Hello ${customer.name},\n\nYour transaction with code ${transactionDetail.transactionCode} has been marked as Done. Please find the attached document for your reference.\n\nRegards,\nCBA`,
         attachments: [
@@ -191,13 +286,28 @@ let snap = new Midtrans.Snap({
     clientKey: process.env.MIDTRANS_CLIENT_KEY
 });
 
+// Fungsi untuk menangani notifikasi Midtrans dan memperbarui transactionStatus
+export const handleMidtransNotification = async (notification) => {
+    const statusResponse = await snap.transaction.notification(notification);
+    const orderId = statusResponse.order_id;
+    const transactionStatus = statusResponse.transaction_status;
+
+    if (transactionStatus === 'settlement') {
+        await TransactionOrder.update({ transactionStatus: 'Paid' }, { where: { orderId } });
+    }
+};
+
 export const createSnapToken = async (transactionCode) => {
-    //cari transaksi berdasarkan transactionCode
-    const transactionDetail = await TransactionDetails.findOne({where: {transactionCode}});
+    const transactionDetail = await TransactionDetails.findOne({ where: { transactionCode } });
     if (!transactionDetail) throw new Error('Transaction not found');
 
-    const customer = await Customers.findByPk(transactionDetail.customerId);
-    if (!customer) throw new Error('Customer not found');
+    // Ambil data customer yang terlibat
+    const transactionCustomers = await TransactionCustomers.findAll({ where: { transactionId: transactionDetail.id } });
+    const customers = await Promise.all(transactionCustomers.map(tc => Customers.findByPk(tc.customerId)));
+    const product = await Products.findByPk(transactionDetail.productId);
+
+    if (!product || customers.length === 0) throw new Error('Product or customers not found');
+
 
     const parameter = {
         transaction_details: {
@@ -205,9 +315,9 @@ export const createSnapToken = async (transactionCode) => {
             gross_amount: transactionDetail.subtotal * transactionDetail.quantity,
         },
         customer_details: {
-            first_name: customer.name,
-            email: customer.email,
-            phone: customer.phone_number
+            first_name: customers[0].name,
+            email: customers[0].email,
+            phone: customers[0].phone_number
         },
         item_details: [
             {
@@ -221,8 +331,24 @@ export const createSnapToken = async (transactionCode) => {
 
     try {
         const snapResponse = await snap.createTransaction(parameter);
+
+        // Buat invoice setelah Snap token berhasil dibuat
+        const invoice = {
+            visitPurpose: "Business Meeting",
+            visa: "Tourist Visa",
+            service: product.name,
+            totalPerson: customers.length,
+            referral: "Some Referral Code",
+            fullname: customers[0].name,
+            email: customers[0].email,
+            phone: customers[0].phone_number,
+            hargaService: transactionDetail.subtotal,
+            uploadedDocuments: [/* Berisi path file dokumen yang diupload */],
+            paymentStatus: "Unpaid"
+        };
         return snapResponse.token;
     } catch (error) {
         throw new Error('Failed to create Snap token: ' + error.message);
     }
+
 }

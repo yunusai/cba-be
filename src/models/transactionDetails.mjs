@@ -16,9 +16,16 @@ const TransactionDetails = db.define('transactionDetails', {
         type: DataTypes.DOUBLE,
         allowNull: false
     },
-    status: {
+    orderStatus: {
         type: DataTypes.ENUM('Pending', 'Done'),
         defaultValue: 'Pending'
+    },
+    transactionStatus: {
+        type: DataTypes.ENUM('Pending', 'Paid'),
+        defaultValue: 'Pending'
+    },
+    invoiceNumber: {
+        type: DataTypes.STRING,
     },
     tanggalSewa: {
         type: DataTypes.DATEONLY,
@@ -43,6 +50,11 @@ const TransactionDetails = db.define('transactionDetails', {
             if(!transactionDetail.transactionCode) {
                 const today = new Date().toISOString().split('T')[0].replace(/-/g, '');  // Format tanggal menjadi YYYY-MM-DD
                 transactionDetail.transactionCode = `${customerId}${today}`;
+            }
+
+            // Generate invoiceNumber jika kosong
+            if (!transactionDetail.invoiceNumber) {
+                transactionDetail.invoiceNumber = `INV-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
             }
         }
     }

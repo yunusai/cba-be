@@ -19,6 +19,9 @@ const Products = db.define('products', {
     image: {
         type: DataTypes.STRING,
     },
+    additionalCost: {
+        type: DataTypes.DOUBLE,
+    },
     categoryId: {
         type: DataTypes.INTEGER,
         allowNull: false
