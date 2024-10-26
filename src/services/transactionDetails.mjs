@@ -120,7 +120,7 @@ const sendInvoiceEmail = async (recipientEmail, invoicePath) => {
 
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: 'juanadhiastapersonal@gmail.com',//recipientEmail,
+        to: recipientEmail,
         subject: 'Your Invoice',
         text: 'Please find attached your invoice.',
         attachments: [
@@ -260,7 +260,7 @@ const sendEmailWithAttachment = async(transactionDetail, file) => {
 
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: 'juanadhiastapersonal@gmail.com',//customer.email,
+        to: customer.email,
         subject: `Transaction Update: ${transactionDetail.transactionCode}`,
         text: `Hello ${customer.name},\n\nYour transaction with code ${transactionDetail.transactionCode} has been marked as Done. Please find the attached document for your reference.\n\nRegards,\nCBA`,
         attachments: [
