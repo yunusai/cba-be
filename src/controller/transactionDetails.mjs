@@ -120,3 +120,18 @@ export const updateOrderStatus = async (req, res) => {
         res.status(500).send('Failed to update order status');
     }
 };
+
+export const updateOrderStatusOnly = async (req, res) => {
+    const { transactionId } = req.params;
+    const { newStatus } = req.body;
+
+    try {
+        const updatedTransaction = await transactionDetailController.updateOrderStatusOnly(transactionId, newStatus);
+        res.status(200).json({
+            message: 'Order status updated successfully',
+            data: updatedTransaction,
+        });
+    } catch (error){
+        res.status(400).json({ message: error.message });
+    }
+}

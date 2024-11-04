@@ -17,7 +17,7 @@ const TransactionDetails = db.define('transactionDetails', {
         allowNull: false
     },
     orderStatus: {
-        type: DataTypes.ENUM('Pending', 'Done'),
+        type: DataTypes.ENUM('Need Confirmation', 'Processing', 'On Hold', 'Cancel', 'Done'),
         defaultValue: 'Pending'
     },
     transactionStatus: {

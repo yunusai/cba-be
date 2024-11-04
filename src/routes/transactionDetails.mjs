@@ -17,5 +17,6 @@ router.patch('/transaction-detail/update-status/:transactionCode',
       transactionDetailsController.uploadAndUpdateTransaction
     );
 router.get('/transaction-detail/snap-token/:transactionCode', transactionDetailsController.generateSnapToken);
+router.patch('/transaction/:transactionId/order-status', transactionDetailsController.updateOrderStatusOnly);
 
 export default router;

@@ -7,6 +7,7 @@ import { generateInvoice } from "../middleware/generateInvoice.mjs";
 import multer from "multer";
 import nodemailer from "nodemailer";
 import { Midtrans } from "midtrans-client";
+import { OrderStatus } from '../enum/OrderStatus.mjs'
 import path from "path";
 import fs from 'fs'
 
@@ -20,7 +21,7 @@ export const getAllTransactionDetails = async () => {
             {
                 model: Customers,
                 through: { attributes: [] }, // Mengosongkan kolom dari tabel perantara jika tidak diperlukan
-                attributes: ['fullName', 'email', 'phoneNumber'] // Kolom yang diambil dari Customers
+                //attributes: ['fullName', 'email', 'phoneNumber'] // Kolom yang diambil dari Customers
             }
         ]
     });
@@ -36,7 +37,7 @@ export const getTransactionDetailById = async (id) => {
             {
                 model: Customers,
                 through: { attributes: [] }, // Mengosongkan kolom dari tabel perantara jika tidak diperlukan
-                attributes: ['fullName', 'email', 'phoneNumber'] // Kolom yang diambil dari Customers
+                //attributes: ['fullName', 'email', 'phoneNumber'] // Kolom yang diambil dari Customers
             }
         ]
     });
@@ -111,10 +112,12 @@ export const createTransactionDetail = async (data) => {
 
 const sendInvoiceEmail = async (recipientEmail, invoicePath) => {
     const transporter = nodemailer.createTransport({
-        service: 'gmail', // atau provider email lainnya
+        host: "mail.cbaservices.id", // Ganti dengan hostname SMTP dari cPanel
+        port: 465, // Port SMTP, biasanya 465 untuk SSL atau 587 untuk TLS
+        secure: true, // true untuk port 465, dan false untuk port 587
         auth: {
-            user: process.env.EMAIL_USER, // Ganti dengan email Anda
-            pass: process.env.EMAIL_PASSWORD // Ganti dengan password Anda
+            user: process.env.EMAIL_USER, // Email lengkap yang digunakan di cPanel
+            pass: process.env.EMAIL_PASSWORD // Password email tersebut
         }
     });
 
@@ -177,6 +180,26 @@ export const checkTransactionStatus = async (transactionCode) => {
     if (!transactionDetail) throw new Error('Transaction not found');
 
     return transactionDetail.status;  // Mengembalikan status transaksi
+}
+
+export const updateOrderStatusOnly = async (transactionId, newStatus) => {
+    // Validasi apakah status baru adalah salah satu dari enum OrderStatus
+    if (!Object.values(OrderStatus).includes(newStatus)) {
+        throw new Error('Invalid order status');
+    }
+
+    // Cari transaksi berdasarkan ID
+    const transaction = await TransactionDetails.findByPk(transactionId);
+    if (!transaction) {
+        throw new Error('Transaction not found');
+    }
+
+    // Update status order dan simpan perubahan
+    transaction.orderStatus = newStatus;
+    await transaction.save();
+
+    return transaction;
+
 }
 
 // Fungsi untuk pembaruan status order secara manual
@@ -251,10 +274,13 @@ const sendEmailWithAttachment = async(transactionDetail, file) => {
 
     //setup nodemailer
     let transporter = nodemailer.createTransport({
-        service: 'gmail',
+
+        host: "mail.cbaservices.id", // Ganti dengan hostname SMTP dari cPanel, biasanya smtp.namadomain.com
+        port: 465, // Port SMTP, biasanya 465 untuk SSL atau 587 untuk TLS
+        secure: true, // true untuk port 465, dan false untuk port 587
         auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD
+            user: process.env.EMAIL_USER, // Email lengkap yang digunakan di cPanel, e.g., "yourname@yourdomain.com"
+            pass: process.env.EMAIL_PASSWORD // Password email tersebut
         }
     });
 

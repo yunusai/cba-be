@@ -8,6 +8,7 @@ import transactionFinalRoutes from './transationFinals.mjs'
 import customersRoutes from './customers.mjs'
 import countiresRoutes from './countries.mjs'
 import categoryRoutes from './categories.mjs'
+import salesAnalyticsRoutes from './salesAnalyticsRoutes.mjs'
 import path from 'path';
 import { fileURLToPath } from "url";
 
@@ -31,5 +32,6 @@ router.use(transactionFinalRoutes);
 router.use(customersRoutes);
 router.use(countiresRoutes);
 router.use(categoryRoutes);
+router.use(salesAnalyticsRoutes);
 
 export default router;

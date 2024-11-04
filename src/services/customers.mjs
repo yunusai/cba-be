@@ -83,7 +83,7 @@ export const uploadFiles = upload.fields([
 ]);
 
 const getPublicUrl = (filePath) => {
-    return `http://localhost:3000/${filePath.replace('uploads', '')}`;
+    return `${process.env.SERVER_BASE_URL}/${filePath}`;
 }
 
 
@@ -141,10 +141,10 @@ export const saveCustomer = async (input, files) => {
     // Tambahkan path file ke input sebelum disimpan
     const customerData = {
         ...input,
-        passportFilePath: files.passport ? getPublicUrl(files.passport[0].path) : null,
-        visaFilePath: files.visa ? getPublicUrl(files.visa[0].path) : null,
-        photoFilePath: files.photo ? getPublicUrl(files.photo[0].path) : null,
-        docPendukungFilePaths: docPendukungUrls.length > 0 ? docPendukungUrls : null, // Array of URLs for multiple docPendukung files
+        passport: files.passport ? getPublicUrl(files.passport[0].path) : null,
+        visa: files.visa ? getPublicUrl(files.visa[0].path) : null,
+        photo: files.photo ? getPublicUrl(files.photo[0].path) : null,
+        docPendukung: docPendukungUrls.length > 0 ? JSON.stringify(docPendukungUrls) : null, // Array of URLs for multiple docPendukung files
     };
 
     const newCustomer = await Customers.create(customerData);
