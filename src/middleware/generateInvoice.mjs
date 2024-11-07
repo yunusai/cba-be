@@ -2,14 +2,17 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+console.log("ini di generate invoice: ",__dirname)
+
 export const generateInvoice = (invoiceData, transactionId) => {
     // Tentukan path untuk folder invoice
-    const invoiceFolderPath = path.join(__dirname, 'invoices');
-
+    const invoiceFolderPath = path.join(__dirname, '../../invoices');
+    console.log("ini invoice folder? ", invoiceFolderPath)
     // Buat folder jika belum ada
-    if (!fs.existsSync(invoiceFolderPath)) {
-        fs.mkdirSync(invoiceFolderPath, { recursive: true });
-    }
+    // if (!fs.existsSync(invoiceFolderPath)) {
+    //     fs.mkdirSync(invoiceFolderPath, { recursive: true });
+    // }
 
     const doc = new PDFDocument();
     const invoicePath = `invoices/invoice_${transactionId}.pdf`;

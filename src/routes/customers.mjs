@@ -10,5 +10,6 @@ router.get('/customers/name/:name', authenticateToken, customerController.getCus
 router.post('/customers', customerController.createCustomer); //untuk create customers baru bisa dilakukan oleh customers itu sendiri
 router.put('/customers/:id', authenticateToken, customerController.updateCustomer);
 router.delete('/customers/:id', authenticateToken, customerController.deleteCustomer);
+router.put('/customers-batch', authenticateToken, customerController.updateCustomersBatch);
 
 export default router;

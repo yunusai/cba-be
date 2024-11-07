@@ -189,3 +189,38 @@ export const deleteCustomer = async (id) => {
 
     await customers.destroy();
 }
+
+export const updateCustomersBatch = async (customersData) => {
+    try {
+        const updatedCustomers = [];
+
+        for (const customerData of customersData) {
+            const { id, ...updateData } = customerData;
+            console.log("Processing customerData:", customerData);
+
+            // Cari customer berdasarkan ID
+            const customer = await Customers.findByPk(id);
+            if (!customer) {
+                throw new Error(`Customer not found with ID ${id}`);
+            }
+
+            // Jika ada perubahan pada agen, cek apakah agen tersedia
+            if (updateData.agentId) {
+                const agent = await Agents.findByPk(updateData.agentId);
+                if (!agent) {
+                    throw new Error(`Agent not found with ID ${updateData.agentId}`);
+                }
+            }
+
+            // Lakukan update untuk setiap customer tanpa menggunakan transaksi
+            await customer.update(updateData);
+            updatedCustomers.push(customer);
+        }
+
+        // Kembalikan hasil dalam bentuk JSON
+        return updatedCustomers.map(cust => cust.toJSON());
+
+    } catch (error) {
+        throw error;
+    }
+};

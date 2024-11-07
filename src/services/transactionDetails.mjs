@@ -11,6 +11,9 @@ import { OrderStatus } from '../enum/OrderStatus.mjs'
 import path from "path";
 import fs from 'fs'
 
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+console.log("Ini dirname: ", __dirname)
+
 export const getAllTransactionDetails = async () => {
     return await TransactionDetails.findAll({
         include: [
@@ -208,10 +211,12 @@ export const updateOrderStatus = async (orderId, newStatus) => {
 };
 
 // Buat folder uploads jika belum ada
-const uploadDir = 'uploads/';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
+const uploadDir = path.join(__dirname, 'uploads');
+console.log("ini uploadDir: ",uploadDir);
+// if (!fs.existsSync(uploadDir)) {
+//     console.log("sebelum mkdir: ", uploadDir);
+//     fs.mkdirSync(uploadDir, { recursive: true }); // Pastikan dengan { recursive: true }
+// }
 
 
 //setup multer untuk file upload
@@ -220,11 +225,11 @@ const storage = multer.diskStorage({
         cb(null, uploadDir); // Direktori untuk menyimpan file
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); //format nama file
+        cb(null, `${Date.now()}-${file.originalname}`); // Format nama file
     }
 });
 
-export const upload = multer({storage: storage});
+export const upload = multer({ storage });
 
 //service untuk memperbari status transaksi dan mengunggah file
 export const updateTransactionStatus = async (transactionCode, status, file) => {

@@ -62,3 +62,13 @@ export const deleteCustomer = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 };
+
+export const updateCustomersBatch = async (req, res) => {
+    console.log("Incoming data: ", req.body.customers);
+    try {
+        const updatedCustomers = await customerService.updateCustomersBatch(req.body.customers);
+        res.status(200).json(updatedCustomers);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};

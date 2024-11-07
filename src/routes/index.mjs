@@ -1,4 +1,6 @@
 import express from "express";
+import path, { dirname } from 'path';
+import { fileURLToPath } from "url";
 import agentReview from './agentPerformance.mjs'
 import productRoutes from './products.mjs'
 import authRoutes from './authRoutes.mjs'
@@ -9,19 +11,18 @@ import customersRoutes from './customers.mjs'
 import countiresRoutes from './countries.mjs'
 import categoryRoutes from './categories.mjs'
 import salesAnalyticsRoutes from './salesAnalyticsRoutes.mjs'
-import path from 'path';
-import { fileURLToPath } from "url";
 
 
 const router = express.Router();
 
-// Menentukan __dirname secara manual
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Tentukan direktori 'uploads' dengan import.meta.url
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const uploadsDir = path.resolve(__dirname, 'uploads');
+console.log(__dirname);
 
+// Atur akses publik untuk folder 'uploads'
+router.use('/uploads', express.static(uploadsDir));
 
-// Rute untuk mengakses file publik
-router.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 router.use(agentReview);
 router.use(productRoutes);
