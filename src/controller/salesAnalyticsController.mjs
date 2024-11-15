@@ -3,9 +3,9 @@ import AgentPerformanceService from "../services/agentAnalyticsService.mjs";
 
 class SalesAnalyticsController {
     static async getOverview(req, res) {
-        const { startDate, endDate } = req.body;
+        const { startDate, endDate, sortBy, order } = req.body;
         try {
-            const data = await SalesAnalyticsService.getOverview(startDate, endDate);
+            const data = await SalesAnalyticsService.getOverview(startDate, endDate, sortBy, order);
             res.status(200).json({
                 message: "Sales Analytics Overview",
                 data
@@ -17,16 +17,10 @@ class SalesAnalyticsController {
     }
 
     static async getAgentPerformance(req, res) {
-        const { startDate, endDate } = req.body;
+        const { startDate, endDate, sortBy, order } = req.body;
 
         try {
-            if ( !startDate || !endDate) {
-                return res.status(400).json({
-                    message: " startDate, and endDate are required."
-                });
-            }
-
-            const performanceData = await AgentPerformanceService.getAgentPerformance( startDate, endDate);
+            const performanceData = await AgentPerformanceService.getAgentPerformance(startDate, endDate, sortBy, order);
             res.status(200).json({
                 message: "Agent Performance Data",
                 data: performanceData

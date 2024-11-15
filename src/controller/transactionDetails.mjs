@@ -135,3 +135,20 @@ export const updateOrderStatusOnly = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 }
+
+export const trackOrderByInvoice = async (req, res) => {
+    try {
+        const { invoiceNumber } = req.params; // Mengambil invoiceNumber dari URL params
+        const trackingData = await transactionDetailController.trackOrderByInvoice(invoiceNumber);
+
+        res.status(200).json({
+            message: 'Tracking data found',
+            data: trackingData
+        });
+    } catch (error) {
+        res.status(404).json({
+            message: 'Tracking not found',
+            error: error.message
+        });
+    }
+};

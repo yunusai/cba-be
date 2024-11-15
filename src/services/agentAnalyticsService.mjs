@@ -1,8 +1,24 @@
 import db from "../config/database.mjs";
 
 class AgentPerformanceService {
-    static async getAgentPerformance( startDate, endDate) {
+    static async getAgentPerformance(startDate, endDate, sortBy = "totalSales", order = "DESC") {
         try {
+            // Validasi input sorting
+            const validSortFields = [
+                "agentId", "agentName", "categoryId", "categoryName",
+                "productName", "price", "totalSold", "totalOrder", "totalSales"
+            ];
+            if (!validSortFields.includes(sortBy)) {
+                throw new Error(`Invalid sortBy field: ${sortBy}`);
+            }
+
+            // Validasi input order
+            const validOrders = ["ASC", "DESC"];
+            if (!validOrders.includes(order.toUpperCase())) {
+                throw new Error(`Invalid order: ${order}`);
+            }
+
+            // Query untuk mencari data agent performance
             const query = `
                 SELECT
                     agents.id AS agentId,
@@ -26,18 +42,23 @@ class AgentPerformanceService {
                     products ON products.id = transactionDetails.productId
                 JOIN
                     categories ON categories.id = products.categoryId
-                WHERE
-                    transactionDetails.createdAt BETWEEN :startDate AND :endDate
+                ${startDate && endDate ? "WHERE transactionDetails.createdAt BETWEEN :startDate AND :endDate" : ""}
                 GROUP BY
-                    categories.id, products.id
+                    categories.id, products.id, agents.id
                 ORDER BY
-                    totalSales DESC
+                    ${sortBy} ${order.toUpperCase()}
             `;
 
             // Eksekusi query menggunakan sequelize.query
+            const replacements = {};
+            if (startDate && endDate) {
+                replacements.startDate = startDate;
+                replacements.endDate = endDate;
+            }
+
             const results = await db.query(query, {
-                replacements: { startDate, endDate },
-                type: db.QueryTypes.SELECT
+                replacements,
+                type: db.QueryTypes.SELECT,
             });
 
             return results;

@@ -18,5 +18,6 @@ router.patch('/transaction-detail/update-status/:transactionCode',
     );
 router.get('/transaction-detail/snap-token/:transactionCode', transactionDetailsController.generateSnapToken);
 router.patch('/transaction/:transactionId/order-status', transactionDetailsController.updateOrderStatusOnly);
+router.get('/order-tracking/invoice/:invoiceNumber', transactionDetailsController.trackOrderByInvoice);
 
 export default router;

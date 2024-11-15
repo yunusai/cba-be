@@ -211,7 +211,7 @@ export const updateOrderStatus = async (orderId, newStatus) => {
 };
 
 // Buat folder uploads jika belum ada
-const uploadDir = path.join(__dirname, 'uploads');
+const uploadDir = path.resolve(__dirname, 'uploads');
 console.log("ini uploadDir: ",uploadDir);
 // if (!fs.existsSync(uploadDir)) {
 //     console.log("sebelum mkdir: ", uploadDir);
@@ -383,3 +383,46 @@ export const createSnapToken = async (transactionCode) => {
     }
 
 }
+
+export const trackOrderByInvoice = async (invoiceNumber) => {
+    // Mencari transaksi berdasarkan invoiceNumber
+    const transactionDetail = await TransactionDetails.findOne({
+        where: { invoiceNumber }, // Menggunakan invoiceNumber untuk mencari transaksi
+        include: [
+            {
+                model: Products,
+                attributes: ['productName', 'price']
+            },
+            {
+                model: TransactionCustomers,
+                include: [
+                    {
+                        model: Customers,
+                        attributes: ['fullName', 'email', 'phoneNumber']
+                    }
+                ]
+            }
+        ]
+    });
+
+    if (!transactionDetail) {
+        throw new Error('Transaction not found');
+    }
+
+    // Ambil status transaksi dan status order
+    const orderStatus = transactionDetail.orderStatus;
+    const transactionStatus = transactionDetail.transactionStatus;
+    const product = transactionDetail.product;
+    const customer = transactionDetail.transactionCustomers[0].customer;
+
+    return {
+        invoiceNumber: transactionDetail.invoiceNumber,
+        customerName: customer.fullName,
+        customerEmail: customer.email,
+        customerPhone: customer.phoneNumber,
+        productName: product.productName,
+        productPrice: product.price,
+        transactionStatus,
+        orderStatus
+    };
+};
