@@ -27,9 +27,9 @@ class AgentPerformanceService {
                     categories.category AS categoryName,
                     products.productName,
                     products.price,
-                    SUM(CASE WHEN transactionDetails.transactionStatus = 'Done' THEN transactionDetails.quantity ELSE 0 END) AS totalSold,
+                    SUM(CASE WHEN transactionDetails.transactionStatus = 'Paid' THEN transactionDetails.quantity ELSE 0 END) AS totalSold,
                     SUM(CASE WHEN transactionDetails.transactionStatus = 'Pending' THEN transactionDetails.quantity ELSE 0 END) AS totalOrder,
-                    (products.price * SUM(CASE WHEN transactionDetails.transactionStatus = 'Done' THEN transactionDetails.quantity ELSE 0 END)) AS totalSales
+                    (products.price * SUM(CASE WHEN transactionDetails.transactionStatus = 'Paid' THEN transactionDetails.quantity ELSE 0 END)) AS totalSales
                 FROM
                     agents
                 JOIN

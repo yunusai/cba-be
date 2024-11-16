@@ -50,7 +50,7 @@ export const getTransactionDetailById = async (id) => {
 }
 
 export const createTransactionDetail = async (data) => {
-    const { customerIds, productId, subtotal} = data;
+    const { customerIds, productId, subtotal, transactionStatus } = data;
 
     const product = await Products.findByPk(productId);
 
@@ -63,13 +63,14 @@ export const createTransactionDetail = async (data) => {
     const transactionCode = `${customerIds[0]}${today}`;
 
     const totalSubtotal = subtotal + (product.additionalCost || 0);
+    const status = transactionStatus || 'Pending';
     const transactionDetail = await TransactionDetails.create({
         transactionCode,  // Masukkan transactionCode secara eksplisit
         productId,
         quantity: customerIds.length,
         subtotal: totalSubtotal,
         orderStatus: 'Pending',       // Default untuk orderStatus
-        transactionStatus: 'Pending',   // Default untuk transactionStatus
+        transactionStatus: status,   // Default untuk transactionStatus
         tanggalSewa: null,
         akhirSewa: null,
         tanggalKirim: null,

@@ -13,9 +13,16 @@ export const handleRegister = async (req, res) => {
 export const handleLogin = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const { accessToken, refreshToken } = await authService.login(email, password);
+        // Login dan ambil data
+        const { accessToken, refreshToken, agent } = await authService.login(email, password);
+        // Simpan refresh token ke cookie
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'Strict' });
-        res.json({ accessToken, refreshToken });
+        // Kirim response dengan token dan informasi agen
+        res.json({
+            accessToken,
+            refreshToken,
+            agent // Akan mengirimkan name dan email
+        });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

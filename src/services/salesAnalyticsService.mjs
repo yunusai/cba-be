@@ -15,11 +15,11 @@ class SalesAnalyticsService {
                 SELECT
                     category.id AS categoryId,
                     category.category,
-                    SUM(CASE WHEN transactionDetails.transactionStatus = 'Done' THEN transactionDetails.quantity ELSE 0 END) AS totalSold,
+                    SUM(CASE WHEN transactionDetails.transactionStatus = 'Paid' THEN transactionDetails.quantity ELSE 0 END) AS totalSold,
                     SUM(CASE WHEN transactionDetails.transactionStatus = 'Pending' THEN transactionDetails.quantity ELSE 0 END) AS totalOrder,
                     products.productName,
                     products.price,
-                    (products.price * SUM(CASE WHEN transactionDetails.transactionStatus = 'Done' THEN transactionDetails.quantity ELSE 0 END)) AS netSales
+                    (products.price * SUM(CASE WHEN transactionDetails.transactionStatus = 'Paid' THEN transactionDetails.quantity ELSE 0 END)) AS netSales
                 FROM
                     categories AS category
                 JOIN
