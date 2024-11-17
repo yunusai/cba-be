@@ -16,7 +16,7 @@ router.patch('/transaction-detail/update-status/:transactionCode',
       upload.single('file'),
       transactionDetailsController.uploadAndUpdateTransaction
     );
-router.get('/transaction-detail/snap-token/:transactionCode', transactionDetailsController.generateSnapToken);
+router.get('/transaction-detail/snap-token/:invoiceNumber', transactionDetailsController.generateSnapToken);
 router.patch('/transaction/:transactionId/order-status', transactionDetailsController.updateOrderStatusOnly);
 router.get('/order-tracking/invoice/:invoiceNumber', transactionDetailsController.trackOrderByInvoice);
 

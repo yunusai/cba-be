@@ -89,8 +89,8 @@ export const checkTransactionStatus = async (req, res) => {
 
 export const generateSnapToken = async (req, res) => {
     try {
-        const { transactionCode } = req.params;
-        const snapToken = await transactionDetailController.createSnapToken(transactionCode);
+        const { invoiceNumber } = req.params;
+        const snapToken = await transactionDetailController.createSnapToken(invoiceNumber);
         res.json({ snapToken });
     } catch (error) {
         res.status(500).json({ message: 'Error generating Snap token', error: error.message });

@@ -10,6 +10,7 @@ import { Midtrans } from "midtrans-client";
 import { OrderStatus } from '../enum/OrderStatus.mjs'
 import path from "path";
 import fs from 'fs'
+import db from '../config/database.mjs'
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 console.log("Ini dirname: ", __dirname)
@@ -329,9 +330,9 @@ export const handleMidtransNotification = async (notification) => {
     }
 };
 
-export const createSnapToken = async (transactionCode) => {
-    const transactionDetail = await TransactionDetails.findOne({ where: { transactionCode } });
-    if (!transactionDetail) throw new Error('Transaction not found');
+export const createSnapToken = async (invoiceNumber) => {
+    const transactionDetail = await TransactionDetails.findOne({ where: { invoiceNumber } });
+    if (!transactionDetail) throw new Error('Invoice Number not found');
 
     // Ambil data customer yang terlibat
     const transactionCustomers = await TransactionCustomers.findAll({ where: { transactionId: transactionDetail.id } });
@@ -343,7 +344,7 @@ export const createSnapToken = async (transactionCode) => {
 
     const parameter = {
         transaction_details: {
-            order_id: transactionCode,
+            order_id: invoiceNumber,
             gross_amount: transactionDetail.subtotal * transactionDetail.quantity,
         },
         customer_details: {
@@ -387,43 +388,45 @@ export const createSnapToken = async (transactionCode) => {
 
 export const trackOrderByInvoice = async (invoiceNumber) => {
     // Mencari transaksi berdasarkan invoiceNumber
-    const transactionDetail = await TransactionDetails.findOne({
-        where: { invoiceNumber }, // Menggunakan invoiceNumber untuk mencari transaksi
-        include: [
-            {
-                model: Products,
-                attributes: ['productName', 'price']
-            },
-            {
-                model: TransactionCustomers,
-                include: [
-                    {
-                        model: Customers,
-                        attributes: ['fullName', 'email', 'phoneNumber']
-                    }
-                ]
-            }
-        ]
+    const query = `
+        SELECT
+            td.invoiceNumber,
+            td.transactionStatus,
+            td.orderStatus,
+            p.productName,
+            p.price AS productPrice,
+            c.fullName AS customerName,
+            c.email AS customerEmail,
+            c.phoneNumber AS customerPhone
+        FROM transactionDetails td
+        LEFT JOIN products p ON td.productId = p.id
+        LEFT JOIN transactionCustomers tc ON td.id = tc.transactionId
+        LEFT JOIN customers c ON tc.customerId = c.id
+        WHERE td.invoiceNumber = :invoiceNumber;
+    `;
+
+    const results = await db.query(query, {
+        type: db.QueryTypes.SELECT,
+        replacements: { invoiceNumber }
     });
 
-    if (!transactionDetail) {
+    if (results.length === 0) {
         throw new Error('Transaction not found');
     }
 
-    // Ambil status transaksi dan status order
-    const orderStatus = transactionDetail.orderStatus;
-    const transactionStatus = transactionDetail.transactionStatus;
-    const product = transactionDetail.product;
-    const customer = transactionDetail.transactionCustomers[0].customer;
-
-    return {
-        invoiceNumber: transactionDetail.invoiceNumber,
-        customerName: customer.fullName,
-        customerEmail: customer.email,
-        customerPhone: customer.phoneNumber,
-        productName: product.productName,
-        productPrice: product.price,
-        transactionStatus,
-        orderStatus
+    // Strukturkan hasil jika ada banyak pelanggan
+    const response = {
+        invoiceNumber: results[0].invoiceNumber,
+        productName: results[0].productName,
+        productPrice: results[0].productPrice,
+        transactionStatus: results[0].transactionStatus,
+        orderStatus: results[0].orderStatus,
+        customers: results.map(result => ({
+            fullName: result.customerName,
+            email: result.customerEmail,
+            phoneNumber: result.customerPhone
+        }))
     };
+
+    return response;
 };
