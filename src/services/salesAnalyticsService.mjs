@@ -17,9 +17,10 @@ class SalesAnalyticsService {
                     category.category,
                     SUM(CASE WHEN transactionDetails.transactionStatus = 'Paid' THEN transactionDetails.quantity ELSE 0 END) AS totalSold,
                     SUM(CASE WHEN transactionDetails.transactionStatus = 'Pending' THEN transactionDetails.quantity ELSE 0 END) AS totalOrder,
-                    products.productName,
+                    products.service,
                     products.price,
-                    (products.price * SUM(CASE WHEN transactionDetails.transactionStatus = 'Paid' THEN transactionDetails.quantity ELSE 0 END)) AS netSales
+                    (products.price * SUM(CASE WHEN transactionDetails.transactionStatus = 'Paid' THEN transactionDetails.quantity ELSE 0 END)) AS netSales,
+                    transactionDetails.createdAt
                 FROM
                     categories AS category
                 JOIN
@@ -29,10 +30,10 @@ class SalesAnalyticsService {
                 WHERE
                     ${dateCondition}
                 GROUP BY
-                    category.id, products.productName, products.price
+                    category.id, products.service, products.price
                 ORDER BY
                     ${sortField} ${sortOrder}
-                LIMIT 5;
+                ;
             `;
 
             const results = await db.query(query, {
