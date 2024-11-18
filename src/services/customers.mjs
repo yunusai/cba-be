@@ -60,7 +60,7 @@ const storage = multer.diskStorage({
 // File filter: hanya menerima JPG atau PDF
 const fileFilter = (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (ext === '.jpg' || ext === '.jpeg' || ext === '.pdf') {
+    if (ext === '.jpg' || ext === '.jpeg' || ext === '.pdf' || ext === '.png') {
         cb(null, true);
     } else {
         cb(new Error('Only .jpg, .jpeg, and .pdf files are allowed'), false);
