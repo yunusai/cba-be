@@ -19,5 +19,6 @@ router.patch('/transaction-detail/update-status/:transactionCode',
 router.get('/transaction-detail/snap-token/:invoiceNumber', transactionDetailsController.generateSnapToken);
 router.patch('/transaction/:transactionId/order-status', transactionDetailsController.updateOrderStatusOnly);
 router.get('/order-tracking/invoice/:invoiceNumber', transactionDetailsController.trackOrderByInvoice);
+router.post('/payment-notification', transactionDetailsController.paymentNotificationHandler);
 
 export default router;

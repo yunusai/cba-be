@@ -324,10 +324,35 @@ export const handleMidtransNotification = async (notification) => {
     const statusResponse = await snap.transaction.notification(notification);
     const orderId = statusResponse.order_id;
     const transactionStatus = statusResponse.transaction_status;
+    const fraudStatus = statusResponse.fraud_status;
 
-    if (transactionStatus === 'settlement') {
-        await TransactionOrder.update({ transactionStatus: 'Paid' }, { where: { orderId } });
+    // Temukan transaksi berdasarkan order_id
+    const transaction = await TransactionDetails.findOne({ where: { transactionCode: orderId } });
+    if (!transaction) {
+        throw new Error(`Transaction with order ID ${orderId} not found`);
     }
+
+    // Perbarui status transaksi berdasarkan status dari Midtrans
+    if (transactionStatus === "capture") {
+        if (fraudStatus === "accept") {
+            transaction.transactionStatus = "Paid";
+        } else {
+            transaction.transactionStatus = "Fraud";
+        }
+    } else if (transactionStatus === "settlement") {
+        transaction.transactionStatus = "Paid";
+    } else if (transactionStatus === "pending") {
+        transaction.transactionStatus = "Pending";
+    } else if (transactionStatus === "deny") {
+        transaction.transactionStatus = "Denied";
+    } else if (transactionStatus === "expire") {
+        transaction.transactionStatus = "Expired";
+    } else if (transactionStatus === "cancel") {
+        transaction.transactionStatus = "Canceled";
+    }
+
+    await transaction.save();
+    return transaction;
 };
 
 export const createSnapToken = async (invoiceNumber) => {

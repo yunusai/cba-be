@@ -21,7 +21,7 @@ const TransactionDetails = db.define('transactionDetails', {
         defaultValue: 'Pending'
     },
     transactionStatus: {
-        type: DataTypes.ENUM('Pending', 'Paid'),
+        type: DataTypes.ENUM('Pending', 'Paid', 'Denied', 'Expired', 'Canceled', 'Fraud'),
         defaultValue: 'Pending'
     },
     invoiceNumber: {

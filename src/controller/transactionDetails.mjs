@@ -102,10 +102,17 @@ export const paymentNotificationHandler = async (req, res) => {
     const notification = req.body;
 
     try {
-        await transactionDetailController.handleMidtransNotification(notification);
-        res.status(200).send('Notification handled');
+        const updatedTransaction = await handleMidtransNotification(notification);
+        res.status(200).json({
+            success: true,
+            message: "Notification handled successfully",
+            data: updatedTransaction,
+        });
     } catch (error) {
-        res.status(500).send('Failed to handle notification');
+        res.status(500).json({
+            success: false,
+            message: `Failed to handle notification: ${error.message}`,
+        });
     }
 };
 
