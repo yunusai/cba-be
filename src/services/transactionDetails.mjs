@@ -2,13 +2,14 @@ import TransactionDetails from "../models/transactionDetails.mjs";
 import TransactionCustomers from "../models/transactionCustomers.mjs";
 import Customers from "../models/customers.mjs";
 import Products from "../models/products.mjs";
-import Variations from "../models/productVariations.mjs";
+import Variations from "../models/productvariations.mjs";
 import Agents from "../models/agents.mjs";
 import { generateInvoice } from "../middleware/generateInvoice.mjs";
 import multer from "multer";
 import nodemailer from "nodemailer";
 import { Midtrans } from "midtrans-client";
 import { OrderStatus } from '../enum/OrderStatus.mjs'
+import Sequelize from 'sequelize';
 import path from "path";
 import fs from 'fs'
 import db from '../config/database.mjs'
@@ -20,12 +21,13 @@ export const getAllTransactionDetails = async () => {
     return await TransactionDetails.findAll({
         include: [
             {
+                model: Products,
+                attributes: ['productName'], // Kolom yang diambil dari Products
+            },
+            {
                 model: Variations,
-                attributes: ['variationName', 'price',], // Kolom yang diambil dari Variations
-                include: [{
-                    model: Products,
-                    attributes: ['productName'] // Kolom yang diambil dari Products
-                }]
+                // Menghubungkan Variations dengan Products
+                attributes: ['variationName', 'price', 'agentFee', 'additionalCost'], //
             },
             {
                 model: Customers,
@@ -40,12 +42,15 @@ export const getTransactionDetailById = async (id) => {
     const transactionDetails = await TransactionDetails.findByPk(id, {
         include: [
             {
+                model: Products,
+                attributes: ['productName'],
+                // Kolom yang diambil dari Products
+            },
+
+            {
                 model: Variations,
-                attributes: ['variationName', 'price', 'agentFee'], // Kolom yang diambil dari Variations
-                include: [{
-                    model: Products,
-                    attributes: ['productName'] // Kolom yang diambil dari Products
-                }] // Kolom yang diambil dari Products
+                // Menghubungkan Variations dengan Products
+                attributes: ['variationName', 'price', 'agentFee', 'additionalCost'], //
             },
             {
                 model: Customers,
@@ -60,12 +65,16 @@ export const getTransactionDetailById = async (id) => {
 }
 
 export const createTransactionDetail = async (data) => {
-    const { customerIds, variationId, subtotal, transactionStatus } = data;
+    const { customerIds, variationId, productId, subtotal, transactionStatus } = data;
 
+    const product = await Products.findByPk(productId);
     const variation = await Variations.findByPk(variationId);
 
+    if (!product) {
+        throw new Error('Product not found');
+    }
     if (!variation) {
-        throw new Error('Variation not found');
+        throw new Error('variation not found');
     }
 
     // Buat transactionCode tanpa menggunakan tanda hubung
@@ -76,10 +85,11 @@ export const createTransactionDetail = async (data) => {
     const status = transactionStatus || 'Pending';
     const transactionDetail = await TransactionDetails.create({
         transactionCode,  // Masukkan transactionCode secara eksplisit
+        productId,
         variationId,
         quantity: customerIds.length,
         subtotal: totalSubtotal,
-        orderStatus: 'On Hold',       // Default untuk orderStatus
+        orderStatus: 'Processing',       // Default untuk orderStatus
         transactionStatus: status,   // Default untuk transactionStatus
         tanggalSewa: null,
         akhirSewa: null,
@@ -108,7 +118,8 @@ export const createTransactionDetail = async (data) => {
     })
 
     const invoiceData = {
-        service: variation.variationName,
+        product: product.productName,
+        variation: variation.variationName,
         totalPerson: customerIds.length,
         referral: agent.name,
         fullname: primaryCustomer.fullName,
@@ -152,17 +163,22 @@ const sendInvoiceEmail = async (recipientEmail, invoicePath) => {
 };
 
 export const updateTransactionDetail = async (id, data) => {
-    const { customerIds, variationId, quantity, subtotal } = data;
+    const { customerIds, variationId, productId, quantity, subtotal } = data;
     const transactionDetails = await TransactionDetails.findByPk(id);
 
     if (!transactionDetails) throw new Error('Transaction detail not found');
 
+    const products = await Products.findByPk(productId);
+    if (!products) {
+        throw new Error('Product not found');
+    }
     const variations = await Variations.findByPk(variationId);
-    if (!variations) {
-        throw new Error('Variation not found');
+    if (!products) {
+        throw new Error('Product not found');
     }
 
-    transactionDetails.variation = variationId;
+    transactionDetails.variationId = variationId;
+    transactionDetails.productId = productId;
     transactionDetails.quantity = quantity;
     transactionDetails.subtotal = subtotal;
 
@@ -279,6 +295,11 @@ const sendEmailWithAttachment = async (transactionDetail, file) => {
     if (!product) {
         throw new Error('Product not found');
     }
+    const variation = await Variations.findByPk(transactionDetail.variationId);
+
+    if (!variation) {
+        throw new Error('variation not found');
+    }
 
     // Pastikan ada customer sebelum mengirim email
     if (customers.length === 0) {
@@ -371,9 +392,10 @@ export const createSnapToken = async (invoiceNumber) => {
     // Ambil data customer yang terlibat
     const transactionCustomers = await TransactionCustomers.findAll({ where: { transactionId: transactionDetail.id } });
     const customers = await Promise.all(transactionCustomers.map(tc => Customers.findByPk(tc.customerId)));
-    const variation = await Variations.findByPk(transactionDetail.variationId);
+    const product = await Products.findByPk(transactionDetail.productId);
+    const variation = await Products.findByPk(transactionDetail.variationId);
 
-    if (!variation || customers.length === 0) throw new Error('Variation or customers not found');
+    if (!product || !variation || customers.length === 0) throw new Error('Product, variation or customers not found');
 
 
     const parameter = {
@@ -388,10 +410,12 @@ export const createSnapToken = async (invoiceNumber) => {
         },
         item_details: [
             {
-                id: transactionDetail.variationId,
-                price: transactionDetail.subtotal,
+                id: transactionDetail.productId,
+                variationId: transactionDetail.variationId,
+                price: variation.price,
+                agentFee: variation.agentFee,
                 quantity: transactionDetail.quantity,
-                name: "Pembelian Service"
+                name: "Pembelian Service",
             }
         ]
     };
@@ -403,7 +427,7 @@ export const createSnapToken = async (invoiceNumber) => {
         const invoice = {
             visitPurpose: "Business Meeting",
             visa: "Tourist Visa",
-            service: variation.name,
+            service: product.name,
             totalPerson: customers.length,
             referral: "Some Referral Code",
             fullname: customers[0].name,
@@ -428,14 +452,15 @@ export const trackOrderByInvoice = async (invoiceNumber) => {
             td.transactionStatus,
             td.orderStatus,
             p.productName,
-            v.price AS variationPrice,
             v.variationName,
+            v.price AS productPrice,
+            v.agentFee,
             c.fullName AS customerName,
             c.email AS customerEmail,
             c.phoneNumber AS customerPhone
         FROM transactionDetails td
-        LEFT JOIN variations v ON td.variationId = v.id
-        LEFT JOIN products p ON v.productId = p.id
+        LEFT JOIN products p ON td.productId = p.id
+        LEFT JOIN variations v on td.variationId = v.id
         LEFT JOIN transactionCustomers tc ON td.id = tc.transactionId
         LEFT JOIN customers c ON tc.customerId = c.id
         WHERE td.invoiceNumber = :invoiceNumber;
@@ -453,8 +478,10 @@ export const trackOrderByInvoice = async (invoiceNumber) => {
     // Strukturkan hasil jika ada banyak pelanggan
     const response = {
         invoiceNumber: results[0].invoiceNumber,
+        productName: results[0].productName,
         variationName: results[0].variationName,
-        variationPrice: results[0].variationPrice,
+        productPrice: results[0].productPrice,
+        agentFee: results[0].agentFee,
         transactionStatus: results[0].transactionStatus,
         orderStatus: results[0].orderStatus,
         customers: results.map(result => ({

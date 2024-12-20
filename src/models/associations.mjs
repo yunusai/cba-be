@@ -24,9 +24,13 @@ TransactionDetails.belongsToMany(Customers, {
 });
 
 
-// Relasi antara Products dan TransactionDetails
+// Relasi antara Variations dan TransactionDetails
 Variations.hasMany(TransactionDetails, { foreignKey: 'variationId' });
 TransactionDetails.belongsTo(Variations, { foreignKey: 'variationId' });
+
+// Relasi antara Products dan TransactionDetails
+Products.hasMany(TransactionDetails, { foreignKey: 'productId' });
+TransactionDetails.belongsTo(Products, { foreignKey: 'productId' });
 
 //Relasi antara Countries dan Customers
 Countries.hasMany(Customers, { foreignKey: 'countryId', as: 'countryData' });

@@ -1,7 +1,6 @@
 import TransactionDetails from "../models/transactionDetails.mjs";
 import Customers from "../models/customers.mjs";
 import Products from "../models/products.mjs";
-import Variations from "../models/productVariations.mjs";
 import * as transactionDetailController from "../services/transactionDetails.mjs";
 import { UpdateTransactionStatusDTO } from "../dto/updateTransactionStatusDTO.mjs";
 import multer from "multer";

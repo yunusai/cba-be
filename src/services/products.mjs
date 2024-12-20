@@ -118,7 +118,6 @@ export const updateProduct = async (productId, productData, variationsData) => {
                 const { id, ...variationData } = variation;
 
                 if (id) {
-                    // Update existing variation
                     const existingVariation = await Variations.findByPk(id, { transaction });
                     if (!existingVariation) {
                         throw new Error(`Variation with id ${id} not found`);
@@ -134,7 +133,14 @@ export const updateProduct = async (productId, productData, variationsData) => {
         // Commit transaction
         await transaction.commit();
 
-        return { message: 'Product and variations updated successfully', product };
+        const products = await Products.findByPk(productId, {
+            include: [
+                { model: Variations }
+            ],
+        }
+        );
+
+        return products;
     } catch (error) {
         // Rollback transaction on error
         await transaction.rollback();
