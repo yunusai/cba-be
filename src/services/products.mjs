@@ -2,18 +2,7 @@ import Products from "../models/products.mjs";
 import Categories from "../models/categories.mjs";
 import Variations from "../models/productVariations.mjs";
 import db from "../config/database.mjs";
-
 import { Sequelize } from "sequelize";
-
-export const createProducts = async (data) => {
-    try {
-        const products = await Products.create(data);
-        return products;
-    } catch (error) {
-        throw new Error('Failed to create new product: ' + error.message);
-    }
-}
-
 
 
 export const deleteProduct = async (id) => {
