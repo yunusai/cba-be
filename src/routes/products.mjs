@@ -6,9 +6,10 @@ const router = express.Router();
 
 router.get('/product', optionalAuth, productController.getAllProducts);
 router.get('/product/:id', productController.getProductDetails);
-router.post('/product', authenticateToken, productController.createProduct);
+router.post('/product', productController.createProducts);
 router.put('/product/:id', authenticateToken, productController.updateProducts);
 router.delete('/product/:id', authenticateToken, productController.deleteProducts);
-router.get('/product/lookup', productController.lookupProducts)
+router.get('/product/lookup', productController.lookupProducts);
+router.post('/products/:id', productController.updateProduct);
 
 export default router;
