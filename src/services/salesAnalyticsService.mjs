@@ -51,7 +51,9 @@ export const getOverview = async (startDate, endDate) => {
 
         // Top referral leaderboard
         const topReferralQuery = `
-            SELECT 
+            SELECT
+                MIN(a.createdAt) AS createdAt,
+                MAX(a.updatedAt) AS updatedAt,
                 a.name AS agentName, 
                 SUM(td.quantity) AS itemsSold, 
                 SUM(td.subtotal) AS netSales
@@ -62,11 +64,12 @@ export const getOverview = async (startDate, endDate) => {
             ${startDate && endDate ? `WHERE td.createdAt BETWEEN :startDate AND :endDate` : ''}
             GROUP BY a.name
             ORDER BY itemsSold DESC
-            LIMIT 10
         `;
 
         const topProductQuery = `
-            SELECT 
+            SELECT
+                MIN(p.createdAt) AS createdAt,
+                MAX(p.updatedAt) AS updatedAt,
                 p.productName, 
                 SUM(td.quantity) AS itemsSold, 
                 SUM(td.subtotal) AS netSales
@@ -76,7 +79,6 @@ export const getOverview = async (startDate, endDate) => {
              ${startDate && endDate ? `WHERE td.createdAt BETWEEN :startDate AND :endDate` : ''}
             GROUP BY p.productName
             ORDER BY itemsSold DESC
-            LIMIT 10
         `;
 
         const [topReferral, topProducts] = await Promise.all([
@@ -94,7 +96,7 @@ export const getOverview = async (startDate, endDate) => {
             leaderboard: {
                 topReferral,
                 topProducts,
-            },
+            }
         };
     } catch (error) {
         console.error('Error in getOverviewData:', error);
@@ -133,11 +135,11 @@ export const getByProducts = async (productId, startDate, endDate, sortBy, searc
             include: [
                 {
                     model: Categories,
-                    attributes: ['category'],
+                    attributes: ['category', 'createdAt', 'updatedAt'],
                 },
                 {
                     model: Variations,
-                    attributes: ['id', 'variationName'], // Include variationId
+                    attributes: ['id', 'price', 'agentFee', 'variationName', 'createdAt', 'updatedAt'], // Include variationId
                 },
             ],
             order: [[sortBy || 'productName', sortOrder || 'ASC']], // Optional sorting
@@ -193,7 +195,19 @@ export const getByProducts = async (productId, startDate, endDate, sortBy, searc
                 totalSales,
                 totalOrders,
                 category: product.category.category,
+                categoryCreatedAt: product.category.createdAt,
+                categoryUpdatedAt: product.category.updatedAt,
+                createdAt: product.createdAt,
+                updatedAt: product.updatedAt,
                 variationSold,
+                variations: product.variations.map(variation => ({
+                    id: variation.id,
+                    variationName: variation.variationName,
+                    price: variation.price,
+                    agentFee: variation.agentFee,
+                    createdAt: variation.createdAt,
+                    updatedAt: variation.updatedAt,
+                })),
             });
         }
 
@@ -215,7 +229,7 @@ export const getByProducts = async (productId, startDate, endDate, sortBy, searc
 const getVariationsByProductId = async (productId) => {
     const variations = await Variations.findAll({
         where: { productId },
-        attributes: ['id'],
+        attributes: ['id', 'createdAt', 'updatedAt'],
     });
     return variations.map(variation => variation.id);
 };
@@ -255,9 +269,10 @@ export const getByOrders = async (startDate, endDate, orderStatus, search, sortB
             include: [
                 {
                     model: Variations,
+                    attributes: ['id', 'price', 'agentFee', 'variationName', 'createdAt', 'updatedAt'], // Include variationId
                     include: {
                         model: Products,
-                        attributes: ['productName'],
+                        attributes: ['productName', 'createdAt', 'updatedAt'],
                     },
 
                 },
@@ -301,10 +316,16 @@ export const getByOrders = async (startDate, endDate, orderStatus, search, sortB
             result.push({
                 id: order.id,
                 createdAt: order.createdAt,
+                updatedAt: order.updatedAt,
                 kodeInvoice: order.invoiceNumber,
                 orderStatus: order.orderStatus,
                 customerId: order.customerId,
                 productName: order.variation.product.productName || null,
+                productCreatedAt: order.variation.product.createdAt || null,
+                productUpdatedAt: order.variation.product.updatedAt || null,
+                variationName: order.variation.variationName || null,
+                variationCreatedAt: order.variation.createdAt || null,
+                variationUpdatedAt: order.variation.updatedAt || null,
                 itemSold: order.quantity,
                 totalPrice: order.subtotal, // Assuming `subtotal` represents the total for this order
             });
@@ -362,7 +383,9 @@ export const getByAgents = async (startDate, endDate, search, sortBy, sortOrder)
         const agentsQuery = `
             SELECT 
                 a.id, 
-                a.name, 
+                a.name,
+                a.createdAt,
+                a.updatedAt,
                 COUNT(td.id) AS totalOrders, 
                 SUM(td.quantity) AS productSold
             FROM 
@@ -401,6 +424,8 @@ export const getByAgents = async (startDate, endDate, search, sortBy, sortOrder)
                 agentName: agent.name,
                 totalOrders: agent.totalOrders,
                 productSold: agent.productSold,
+                createdAt: agent.createdAt,
+                updatedAt: agent.updatedAt,
             })),
         };
     } catch (error) {
@@ -449,6 +474,8 @@ export const getAgentDetails = async (agentId, startDate, endDate, search, sortB
                 SUM(td.quantity) AS totalQuantitySold,
                 SUM(td.subtotal*td.quantity) AS totalSales,
                 v.productId,
+                p.createdAt,
+                p.updatedAt,
                 c.id AS customerId,
                 p.productName,
                 SUM(v.agentFee*td.quantity) AS commission
@@ -513,6 +540,8 @@ export const getAgentDetails = async (agentId, startDate, endDate, search, sortB
             totalQuantitySold: product.totalQuantitySold,
             totalSales: product.totalSales,
             commission: product.commission,
+            productCreatedAt: product.createdAt,
+            productUpdatedAt: product.updatedAt,
         }));
 
         // Menghitung total komisi
